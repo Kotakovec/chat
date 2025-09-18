@@ -318,32 +318,52 @@ function loadMessages() {
   const msgDiv = document.getElementById("chatMessages");
   msgDiv.innerHTML = "";
 
-  db.ref("privateChats/" + currentChatId + "/messages")
-    .once("value")
-    .then(snap => {
-      const messages = [];
-      snap.forEach(child => {
-        messages.push(child.val());
-      });
+  const messages = [];
 
-      // setřídit podle timestampu
-      messages.sort((a, b) => a.ts - b.ts);
+  function renderAll() {
+    msgDiv.innerHTML = "";
+    messages.sort((a, b) => a.ts - b.ts);
+    messages.forEach(msg => {
+      const isMe = msg.from === currentUser.id;
+      const div = document.createElement("div");
+      div.className = "messageRow";
 
-      // vykreslit všechny zprávy
-      messages.forEach(msg => {
-        const isMe = msg.from === currentUser.id;
-        const senderName = isMe ? currentUser.name : currentChatName;
-        const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : "https://via.placeholder.com/30";
-        const div = document.createElement("div");
-        div.className = "messageRow";
-        div.innerHTML = `<div class="senderName"><img src="${photo}">${senderName}</div>
+      if (isMe) {
+        div.innerHTML = `<div class="senderName"><img src="${currentUser.photo||'https://via.placeholder.com/30'}">${currentUser.name}</div>
                          <div class="messageText">${msg.text}</div>`;
         msgDiv.appendChild(div);
-      });
-
-      msgDiv.scrollTop = msgDiv.scrollHeight;
+      } else {
+        // načíst profilovku odesílatele živě
+        db.ref("users/" + msg.from).once("value").then(uSnap => {
+          const uData = uSnap.val();
+          div.innerHTML = `<div class="senderName"><img src="${uData.photo||'https://via.placeholder.com/30'}">${uData.name}</div>
+                           <div class="messageText">${msg.text}</div>`;
+          msgDiv.appendChild(div);
+          msgDiv.scrollTop = msgDiv.scrollHeight;
+        });
+      }
     });
+    msgDiv.scrollTop = msgDiv.scrollHeight;
+  }
+
+  // načíst staré zprávy
+  db.ref("privateChats/" + currentChatId + "/messages").once("value").then(snap => {
+    snap.forEach(child => {
+      messages.push({ id: child.key, ...child.val() });
+    });
+    renderAll();
+  });
+
+  // live listener na nové zprávy
+  db.ref("privateChats/" + currentChatId + "/messages").on("child_added", snap => {
+    const msg = { id: snap.key, ...snap.val() };
+    if (!messages.find(m => m.id === msg.id)) {
+      messages.push(msg);
+      renderAll();
+    }
+  });
 }
+
 </script>
 
 </body>
