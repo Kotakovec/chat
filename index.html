@@ -319,40 +319,31 @@ function loadMessages() {
   msgDiv.innerHTML = "";
 
   db.ref("privateChats/" + currentChatId + "/messages")
-    .orderByChild("ts")
-    .once("value", snap => {
+    .once("value")
+    .then(snap => {
       const messages = [];
       snap.forEach(child => {
-        messages.push({ id: child.key, ...child.val() });
+        messages.push(child.val());
       });
 
-      // vykreslit zprávy podle času
+      // setřídit podle timestampu
+      messages.sort((a, b) => a.ts - b.ts);
+
+      // vykreslit všechny zprávy
       messages.forEach(msg => {
         const isMe = msg.from === currentUser.id;
-        if (isMe) {
-          const div = document.createElement("div");
-          div.className = "messageRow";
-          div.innerHTML = `<div class="senderName"><img src="${currentUser.photo || 'https://via.placeholder.com/30'}">${currentUser.name}</div>
-                           <div class="messageText">${msg.text}</div>`;
-          msgDiv.appendChild(div);
-        } else {
-          db.ref("users/" + msg.from).once("value", uSnap => {
-            const userData = uSnap.val();
-            const photo = userData?.photo || "https://via.placeholder.com/30";
-            const div = document.createElement("div");
-            div.className = "messageRow";
-            div.innerHTML = `<div class="senderName"><img src="${photo}">${userData.name}</div>
-                             <div class="messageText">${msg.text}</div>`;
-            msgDiv.appendChild(div);
-          });
-        }
+        const senderName = isMe ? currentUser.name : currentChatName;
+        const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : "https://via.placeholder.com/30";
+        const div = document.createElement("div");
+        div.className = "messageRow";
+        div.innerHTML = `<div class="senderName"><img src="${photo}">${senderName}</div>
+                         <div class="messageText">${msg.text}</div>`;
+        msgDiv.appendChild(div);
       });
 
       msgDiv.scrollTop = msgDiv.scrollHeight;
     });
 }
-
-
 </script>
 
 </body>
