@@ -72,9 +72,6 @@ body, html {
 }
 
 .messageRow .messageText { flex:1; word-break: break-word; }
-
-#emojiMenu { position:absolute; bottom:40px; left:0; background:#fff; border:1px solid #ccc; display:none; padding:5px; max-height:150px; overflow-y:auto; z-index:1000; }
-#emojiMenu img { width:30px; height:30px; cursor:pointer; margin:2px; }
 </style>
 </head>
 <body>
@@ -88,7 +85,8 @@ body, html {
   <img id="profilePic" src="" alt="Profilovka">
   <div id="profileName"></div>
   <div id="profileEmail"></div>
-  <input type="file" id="uploadPic"><br><br>
+  <input type="text" id="profileURL" placeholder="URL profilovky"><br><br>
+  <button id="updatePicBtn">Uložit profilovku</button>
   <button id="panelLogoutBtn">Odhlásit se</button>
 </div>
 
@@ -124,9 +122,7 @@ body, html {
       <div id="chatMessages"></div>
       <div id="chatInput">
         <input type="text" id="msgInput" placeholder="Napiš zprávu...">
-        <button id="emojiBtn">😊</button>
         <button id="sendBtn">Odeslat</button>
-        <div id="emojiMenu"></div>
       </div>
     </div>
   </div>
@@ -151,10 +147,7 @@ const db = firebase.database();
 let currentUser=null,currentChatId=null,currentChatName=null;
 
 // Persistent login
-window.onload=()=>{
-  const savedUser=localStorage.getItem("currentUser");
-  if(savedUser){currentUser=JSON.parse(savedUser);showMainScreen();}
-};
+window.onload=()=>{ const savedUser=localStorage.getItem("currentUser"); if(savedUser){currentUser=JSON.parse(savedUser);showMainScreen();} };
 
 // Registrace
 document.getElementById("regBtn").onclick=()=>{
@@ -199,7 +192,6 @@ function showMainScreen(){
   document.getElementById("profileEmail").innerText=currentUser.email;
   document.getElementById("profilePic").src=currentUser.photo||"https://via.placeholder.com/50";
   loadChatList();
-  loadEmoji();
 }
 
 // Logout
@@ -217,19 +209,15 @@ profileBtn.onclick=(e)=>{e.stopPropagation(); profilePanel.style.display=profile
 document.body.addEventListener("click",()=>{profilePanel.style.display="none";});
 profilePanel.addEventListener("click",e=>{e.stopPropagation();});
 
-// Upload profile pic
-document.getElementById("uploadPic").onchange=(e)=>{
-  const file=e.target.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(evt){
-    const url=evt.target.result;
-    db.ref("users/"+currentUser.id+"/photo").set(url);
-    currentUser.photo=url;
-    localStorage.setItem("currentUser",JSON.stringify(currentUser));
-    document.getElementById("profilePic").src=url;
-    loadChatList();
-  };
-  reader.readAsDataURL(file);
+// Update profile pic via URL
+document.getElementById("updatePicBtn").onclick=()=>{
+  const url=document.getElementById("profileURL").value.trim();
+  if(!url){alert("Zadej URL profilovky"); return;}
+  db.ref("users/"+currentUser.id+"/photo").set(url);
+  currentUser.photo=url;
+  localStorage.setItem("currentUser",JSON.stringify(currentUser));
+  document.getElementById("profilePic").src=url;
+  loadChatList();
 };
 
 // Chat list
@@ -326,23 +314,6 @@ function loadMessages(){
       msgDiv.appendChild(div);
       msgDiv.scrollTop=msgDiv.scrollHeight;
     });
-}
-
-// Emoji menu
-const emojiBtn=document.getElementById("emojiBtn");
-const emojiMenu=document.getElementById("emojiMenu");
-emojiBtn.onclick=(e)=>{e.stopPropagation(); emojiMenu.style.display=emojiMenu.style.display==="block"?"none":"block";}
-document.body.addEventListener("click",()=>{emojiMenu.style.display="none";});
-
-function loadEmoji(){
-  emojiMenu.innerHTML="";
-  db.ref("emojis").on("child_added",snap=>{
-    const emoji=snap.val();
-    const img=document.createElement("img");
-    img.src=emoji.url;
-    img.onclick=()=>{document.getElementById("msgInput").value+=` ${emoji.url} `;};
-    emojiMenu.appendChild(img);
-  });
 }
 </script>
 </body>

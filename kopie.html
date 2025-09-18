@@ -150,17 +150,48 @@ const db = firebase.database();
 
 let currentUser=null,currentChatId=null,currentChatName=null;
 
-// PERSISTENT LOGIN
+// Persistent login
 window.onload=()=>{
   const savedUser=localStorage.getItem("currentUser");
   if(savedUser){currentUser=JSON.parse(savedUser);showMainScreen();}
 };
 
-// LOGIN / REG
-document.getElementById("regBtn").onclick=()=>{const name=document.getElementById("regName").value.trim();const email=document.getElementById("regEmail").value.trim();const pass=document.getElementById("regPass").value.trim();if(!name||!email||!pass){alert("Vyplň všechna pole");return;}db.ref("users").orderByChild("email").equalTo(email).once("value",snap=>{if(snap.exists()){alert("Email už existuje");return;}const newUserRef=db.ref("users").push();newUserRef.set({name,email,password:pass,photo:""});alert("Registrace úspěšná! Přihlaš se.");});};
-document.getElementById("loginBtn").onclick=()=>{const email=document.getElementById("loginEmail").value.trim();const pass=document.getElementById("loginPass").value.trim();if(!email||!pass){alert("Vyplň email i heslo");return;}db.ref("users").orderByChild("email").equalTo(email).once("value",snap=>{if(!snap.exists()){alert("Email nenalezen");return;}let found=false;snap.forEach(child=>{const data=child.val();if(data.password===pass){currentUser={id:child.key,name:data.name,email:data.email,photo:data.photo||""};localStorage.setItem("currentUser",JSON.stringify(currentUser));showMainScreen();found=true;}});if(!found)alert("Špatné heslo");});};
+// Registrace
+document.getElementById("regBtn").onclick=()=>{
+  const name=document.getElementById("regName").value.trim();
+  const email=document.getElementById("regEmail").value.trim();
+  const pass=document.getElementById("regPass").value.trim();
+  if(!name||!email||!pass){alert("Vyplň všechna pole");return;}
+  db.ref("users").orderByChild("email").equalTo(email).once("value",snap=>{
+    if(snap.exists()){alert("Email už existuje");return;}
+    const newUserRef=db.ref("users").push();
+    newUserRef.set({name,email,password:pass,photo:""});
+    alert("Registrace úspěšná! Přihlaš se.");
+  });
+};
 
-// SHOW MAIN SCREEN
+// Login
+document.getElementById("loginBtn").onclick=()=>{
+  const email=document.getElementById("loginEmail").value.trim();
+  const pass=document.getElementById("loginPass").value.trim();
+  if(!email||!pass){alert("Vyplň email i heslo");return;}
+  db.ref("users").orderByChild("email").equalTo(email).once("value",snap=>{
+    if(!snap.exists()){alert("Email nenalezen");return;}
+    let found=false;
+    snap.forEach(child=>{
+      const data=child.val();
+      if(data.password===pass){
+        currentUser={id:child.key,name:data.name,email:data.email,photo:data.photo||""};
+        localStorage.setItem("currentUser",JSON.stringify(currentUser));
+        showMainScreen();
+        found=true;
+      }
+    });
+    if(!found)alert("Špatné heslo");
+  });
+};
+
+// Show main screen
 function showMainScreen(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("mainScreen").style.display="flex";
@@ -171,7 +202,7 @@ function showMainScreen(){
   loadEmoji();
 }
 
-// LOGOUT
+// Logout
 document.getElementById("panelLogoutBtn").onclick=()=>{
   currentUser=null;
   localStorage.removeItem("currentUser");
@@ -179,14 +210,14 @@ document.getElementById("panelLogoutBtn").onclick=()=>{
   document.getElementById("loginScreen").style.display="flex";
 };
 
-// PROFILE PANEL TOGGLE
+// Profile panel
 const profileBtn=document.getElementById("profileBtn");
 const profilePanel=document.getElementById("profilePanel");
 profileBtn.onclick=(e)=>{e.stopPropagation(); profilePanel.style.display=profilePanel.style.display==="block"?"none":"block";}
 document.body.addEventListener("click",()=>{profilePanel.style.display="none";});
 profilePanel.addEventListener("click",e=>{e.stopPropagation();});
 
-// UPLOAD PROFILE PIC
+// Upload profile pic
 document.getElementById("uploadPic").onchange=(e)=>{
   const file=e.target.files[0]; if(!file)return;
   const reader=new FileReader();
@@ -201,7 +232,7 @@ document.getElementById("uploadPic").onchange=(e)=>{
   reader.readAsDataURL(file);
 };
 
-// CHAT LIST
+// Chat list
 function loadChatList(){
   const chatListDiv=document.getElementById("chatList");
   chatListDiv.innerHTML="";
@@ -224,13 +255,14 @@ function loadChatList(){
   });
 }
 
-// NEW CHAT SEARCH
+// New chat search
 document.getElementById("newChatBtn").onclick=()=>{
   const sc=document.getElementById("searchContainer");
   sc.style.display=sc.style.display==="flex"?"none":"flex";
   document.getElementById("searchInput").value="";
   document.getElementById("searchResults").innerHTML="";
 };
+
 document.getElementById("searchInput").oninput=(e)=>{
   const val=e.target.value.toLowerCase();
   const resultsDiv=document.getElementById("searchResults");
@@ -254,8 +286,9 @@ document.getElementById("searchInput").oninput=(e)=>{
   });
 };
 
-// OPEN CHAT
+// Open chat
 function openChat(otherId,otherName){
+  if(otherId===currentUser.id){alert("Nemůžeš si psát sám sobě!"); return;}
   const ids=[currentUser.id,otherId].sort();
   currentChatId=ids.join("_");
   currentChatName=otherName;
@@ -264,21 +297,21 @@ function openChat(otherId,otherName){
   loadMessages();
 }
 
-// SEND MESSAGE
+// Send message
 document.getElementById("sendBtn").onclick=sendMessage;
 document.getElementById("msgInput").addEventListener("keypress",(e)=>{if(e.key==="Enter")sendMessage();});
 function sendMessage(){
   const text=document.getElementById("msgInput").value.trim();
   if(!text||!currentChatId)return;
   db.ref("privateChats/"+currentChatId+"/messages").push({
-    from: currentUser.id,
+    from:currentUser.id,
     text:text,
     ts:Date.now()
   });
   document.getElementById("msgInput").value="";
 }
 
-// LOAD MESSAGES
+// Load messages
 function loadMessages(){
   const msgDiv=document.getElementById("chatMessages");
   db.ref("privateChats/"+currentChatId+"/messages").off();
@@ -295,11 +328,12 @@ function loadMessages(){
     });
 }
 
-// EMOJI MENU
+// Emoji menu
 const emojiBtn=document.getElementById("emojiBtn");
 const emojiMenu=document.getElementById("emojiMenu");
 emojiBtn.onclick=(e)=>{e.stopPropagation(); emojiMenu.style.display=emojiMenu.style.display==="block"?"none":"block";}
 document.body.addEventListener("click",()=>{emojiMenu.style.display="none";});
+
 function loadEmoji(){
   emojiMenu.innerHTML="";
   db.ref("emojis").on("child_added",snap=>{
@@ -311,6 +345,5 @@ function loadEmoji(){
   });
 }
 </script>
-
 </body>
 </html>
