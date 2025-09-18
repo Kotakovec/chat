@@ -1,74 +1,148 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="cs">
 <head>
-  <meta charset="utf-8">
-  <title>Login s Google (Firebase)</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-    #userInfo { margin-top: 20px; display: none; }
-    #logout { margin-top: 10px; display: none; }
-  </style>
+<meta charset="UTF-8">
+<title>Chat s registrací</title>
+<style>
+body { font-family: Arial; text-align: center; margin-top: 30px; }
+#chat { display: none; margin-top: 20px; }
+#messages { border:1px solid #ccc; height:300px; overflow-y:auto; padding:5px; margin-bottom:10px; }
+.msg { margin:5px 0; }
+.from { font-weight:bold; margin-right:5px; }
+</style>
 </head>
 <body>
-  <h2>🔥 Přihlášení do chatu</h2>
-  <button id="loginBtn">Přihlásit se přes Google</button>
+<h2>🔥 Chat s registrací</h2>
 
-  <div id="userInfo">
-    <p id="welcome"></p>
-  </div>
-  <button id="logout">Odhlásit se</button>
+<div id="registerForm">
+  <h3>Registrace</h3>
+  <input type="text" id="regName" placeholder="Jméno" required>
+  <input type="email" id="regEmail" placeholder="Email" required>
+  <input type="password" id="regPass" placeholder="Heslo" required>
+  <button id="regBtn">Registrovat</button>
+</div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<div id="loginForm" style="margin-top:20px;">
+  <h3>Login</h3>
+  <input type="email" id="loginEmail" placeholder="Email" required>
+  <input type="password" id="loginPass" placeholder="Heslo" required>
+  <button id="loginBtn">Přihlásit se</button>
+</div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
-      authDomain: "chat-a99ee.firebaseapp.com",
-      projectId: "chat-a99ee",
-      storageBucket: "chat-a99ee.appspot.com", // opraveno
-      messagingSenderId: "558124959244",
-      appId: "1:558124959244:web:e603b56a1fbd9c2d12d029",
-      measurementId: "G-2C6T31PMGS"
-    };
+<div id="chat">
+  <p id="welcome"></p>
+  <div id="messages"></div>
+  <input type="text" id="text" placeholder="Napiš zprávu..." style="width:70%;">
+  <button id="sendBtn">Odeslat</button>
+  <button id="logoutBtn">Odhlásit se</button>
+</div>
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
-    // Přihlášení přes redirect
-    document.getElementById("loginBtn").onclick = () => {
-      auth.signInWithRedirect(provider);
-    };
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
+  authDomain: "chat-a99ee.firebaseapp.com",
+  projectId: "chat-a99ee",
+  storageBucket: "chat-a99ee.appspot.com",
+  messagingSenderId: "558124959244",
+  appId: "1:558124959244:web:e603b56a1fbd9c2d12d029",
+  measurementId: "G-2C6T31PMGS"
+};
 
-    // Zpracování výsledku redirectu
-    auth.getRedirectResult().then(result => {
-      if (result.user) showUser(result.user);
-    }).catch(err => console.error(err));
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    // Posluchač stavu uživatele
-    auth.onAuthStateChanged(user => {
-      if (user) showUser(user);
-      else {
-        document.getElementById("loginBtn").style.display = "inline-block";
-        document.getElementById("logout").style.display = "none";
-        document.getElementById("userInfo").style.display = "none";
+let currentUser = null;
+
+// Registrace
+document.getElementById("regBtn").onclick = () => {
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const pass = document.getElementById("regPass").value.trim();
+  if(!name || !email || !pass) { alert("Vyplň všechna pole"); return; }
+
+  // zkontrolujeme, jestli uživatel existuje
+  db.ref("users").orderByChild("email").equalTo(email).once("value", snap => {
+    if(snap.exists()) { alert("Tento email už je registrovaný"); return; }
+
+    const newUserRef = db.ref("users").push();
+    newUserRef.set({ name, email, password: pass });
+    alert("Registrace úspěšná! Nyní se přihlas.");
+    document.getElementById("regName").value = "";
+    document.getElementById("regEmail").value = "";
+    document.getElementById("regPass").value = "";
+  });
+};
+
+// Login
+document.getElementById("loginBtn").onclick = () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value.trim();
+  if(!email || !pass) { alert("Vyplň email i heslo"); return; }
+
+  db.ref("users").orderByChild("email").equalTo(email).once("value", snap => {
+    if(!snap.exists()) { alert("Email nenalezen"); return; }
+
+    let found = false;
+    snap.forEach(child => {
+      const data = child.val();
+      if(data.password === pass) {
+        currentUser = { id: child.key, name: data.name, email: data.email };
+        showChat();
+        found = true;
       }
     });
+    if(!found) alert("Špatné heslo");
+  });
+};
 
-    // Odhlášení
-    document.getElementById("logout").onclick = () => {
-      auth.signOut();
-    };
+// Zobrazení chatu
+function showChat() {
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("chat").style.display = "block";
+  document.getElementById("welcome").innerText = `Vítej, ${currentUser.name}`;
+  loadMessages();
+}
 
-    // Zobrazení info o uživateli
-    function showUser(user) {
-      document.getElementById("welcome").innerText = `Vítej, ${user.displayName}`;
-      document.getElementById("userInfo").style.display = "block";
-      document.getElementById("logout").style.display = "inline-block";
-      document.getElementById("loginBtn").style.display = "none";
-    }
-  </script>
+// Odhlášení
+document.getElementById("logoutBtn").onclick = () => {
+  currentUser = null;
+  document.getElementById("chat").style.display = "none";
+  document.getElementById("loginForm").style.display = "block";
+  document.getElementById("registerForm").style.display = "block";
+  document.getElementById("messages").innerHTML = "";
+};
+
+// Odesílání zpráv
+document.getElementById("sendBtn").onclick = () => {
+  const text = document.getElementById("text").value.trim();
+  if(!text || !currentUser) return;
+  db.ref("messages").push({
+    userId: currentUser.id,
+    name: currentUser.name,
+    text,
+    ts: Date.now()
+  });
+  document.getElementById("text").value = "";
+};
+
+// Načítání zpráv
+function loadMessages() {
+  const messagesDiv = document.getElementById("messages");
+  db.ref("messages").orderByChild("userId").equalTo(currentUser.id).limitToLast(50)
+    .on("child_added", snap => {
+      const msg = snap.val();
+      const div = document.createElement("div");
+      div.className = "msg";
+      div.innerHTML = `<span class="from">${msg.name}:</span> ${msg.text}`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+}
+</script>
 </body>
 </html>
