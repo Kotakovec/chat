@@ -20,7 +20,6 @@ body, html { margin:0; padding:0; height:100%; font-family: Arial; }
 #searchContainer { display:none; flex-direction:column; padding:10px; }
 #searchContainer input { padding:5px; margin-bottom:5px; }
 #chatList { flex:1; overflow-y:auto; }
-#logoutBtn { margin:5px; }
 </style>
 </head>
 <body>
@@ -47,7 +46,6 @@ body, html { margin:0; padding:0; height:100%; font-family: Arial; }
     <!-- Levý panel -->
     <div id="leftPanel">
       <button id="newChatBtn">Zahájit chat</button>
-      <button id="logoutBtn">Odhlásit se</button>
       <div id="searchContainer">
         <input type="text" id="searchInput" placeholder="Vyhledej uživatele">
         <div id="searchResults"></div>
@@ -85,16 +83,6 @@ const db = firebase.database();
 
 let currentUser = null;
 let currentChatId = null;
-let currentChatName = null;
-
-// -------------------- PERSISTENT LOGIN --------------------
-window.onload = ()=>{
-  const savedUser = localStorage.getItem("currentUser");
-  if(savedUser){
-    currentUser = JSON.parse(savedUser);
-    showMainScreen();
-  }
-};
 
 // -------------------- REGISTRACE --------------------
 document.getElementById("regBtn").onclick = () => {
@@ -124,7 +112,6 @@ document.getElementById("loginBtn").onclick = () => {
       const data = child.val();
       if(data.password === pass){
         currentUser = {id:child.key, name:data.name, email:data.email};
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
         showMainScreen();
         found = true;
       }
@@ -198,7 +185,6 @@ document.getElementById("searchInput").oninput = (e)=>{
 function openChat(otherId,otherName){
   const ids = [currentUser.id,otherId].sort();
   currentChatId = ids.join("_");
-  currentChatName = otherName;
   document.getElementById("chatHeader").innerText = otherName;
   document.getElementById("chatMessages").innerHTML="";
   loadMessages();
@@ -223,21 +209,12 @@ function loadMessages(){
   db.ref("privateChats/"+currentChatId+"/messages").limitToLast(50)
     .on("child_added", snap=>{
       const msg = snap.val();
-      const sender = msg.from===currentUser.id ? currentUser.name : currentChatName;
       const div = document.createElement("div");
-      div.innerHTML=`<b>${sender}:</b> ${msg.text}`;
+      div.innerHTML=`<b>${msg.from===currentUser.id?"Ty":"Partner"}:</b> ${msg.text}`;
       msgDiv.appendChild(div);
       msgDiv.scrollTop = msgDiv.scrollHeight;
     });
 }
-
-// -------------------- ODHLÁŠENÍ --------------------
-document.getElementById("logoutBtn").onclick = ()=>{
-  currentUser = null;
-  localStorage.removeItem("currentUser");
-  document.getElementById("mainScreen").style.display="none";
-  document.getElementById("loginScreen").style.display="flex";
-};
 </script>
 
 </body>
