@@ -6,73 +6,32 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
-body, html {
-  margin:0; padding:0; height:100%; 
-  font-family: 'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif;
-  background:#f7f7f7;
-}
-
-#topBar {
-  height:50px; background:#0088cc; color:#fff;
-  display:flex; align-items:center; justify-content:center;
-  font-weight:bold; position:relative;
-}
-
+body, html { margin:0; padding:0; height:100%; font-family:'Roboto','Segoe UI',Helvetica,Arial,sans-serif; background:#f7f7f7; }
+#topBar { height:50px; background:#0088cc; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; position:relative; }
 #profileBtn { position:absolute; left:10px; cursor:pointer; }
-
-#profilePanel {
-  display:none; position:absolute; top:50px; left:0; width:250px;
-  background:#fff; border:1px solid #ccc; padding:10px; z-index:1000;
-}
-
+#profilePanel { display:none; position:absolute; top:50px; left:0; width:250px; background:#fff; border:1px solid #ccc; padding:10px; z-index:1000; }
 #profilePanel img { width:50px; height:50px; border-radius:50%; margin-bottom:10px; }
 #profilePanel button { width:100%; margin-top:10px; padding:5px; border:none; border-radius:4px; background:#0088cc; color:#fff; cursor:pointer; }
-
-#loginScreen, #mainScreen {
-  width:100%; height:calc(100% - 50px); display:flex; flex-direction:column; align-items:center; justify-content:center;
-}
-
+#loginScreen, #mainScreen { width:100%; height:calc(100% - 50px); display:flex; flex-direction:column; align-items:center; justify-content:center; }
 #mainScreen { display:none; }
-
 #chatContainer { display:flex; width:100%; height:100%; }
-
 #leftPanel { width:25%; border-right:1px solid #ccc; display:flex; flex-direction:column; background:#fff; position:relative; }
 #rightPanel { flex:1; display:flex; flex-direction:column; }
-
 #chatHeader { padding:10px; border-bottom:1px solid #ccc; background:#f0f0f0; font-weight:bold; display:flex; align-items:center; }
-
 #chatMessages { flex:1; padding:10px; overflow-y:auto; background:#fafafa; }
-
 #chatInput { display:flex; padding:5px; border-top:1px solid #ccc; background:#f0f0f0; }
 #chatInput input { flex:1; padding:5px; border:1px solid #ccc; border-radius:4px; }
 #chatInput button { padding:5px 10px; margin-left:5px; border:none; border-radius:4px; background:#0088cc; color:#fff; cursor:pointer; }
-
 .userItem { padding:10px; border-bottom:1px solid #eee; cursor:pointer; display:flex; align-items:center; }
 .userItem img { width:30px; height:30px; border-radius:50%; margin-right:10px; }
 .userItem:hover { background:#eee; }
-
 #searchContainer { display:none; flex-direction:column; padding:10px; }
 #searchContainer input { padding:5px; margin-bottom:5px; border:1px solid #ccc; border-radius:4px; }
-
 #chatList { flex:1; overflow-y:auto; }
-
-.messageRow {
-  display:flex;
-  align-items:flex-start;
-  margin-bottom:5px;
-}
-
-.messageRow .senderName {
-  width:90px; font-weight:bold; color:#0088cc;
-  display:flex; align-items:center;
-}
-
-.messageRow .senderName img {
-  width:30px; height:30px; border-radius:50%; margin-right:5px;
-}
-
+.messageRow { display:flex; align-items:flex-start; margin-bottom:5px; }
+.messageRow .senderName { width:90px; font-weight:bold; color:#0088cc; display:flex; align-items:center; }
+.messageRow .senderName img { width:30px; height:30px; border-radius:50%; margin-right:5px; }
 .messageRow .messageText { flex:1; word-break: break-word; }
-
 </style>
 </head>
 <body>
@@ -313,38 +272,51 @@ function sendMessage() {
   document.getElementById("msgInput").value = "";
 }
 
-// Load messages
+// Load messages with live updates and profile pics
 function loadMessages() {
   const msgDiv = document.getElementById("chatMessages");
   msgDiv.innerHTML = "";
 
-  db.ref("privateChats/" + currentChatId + "/messages")
-    .once("value")
-    .then(snap => {
-      const messages = [];
-      snap.forEach(child => {
-        messages.push(child.val());
-      });
+  // cache, aby se nezdvojovaly zprávy
+  const renderedIds = new Set();
 
-      // setřídit podle timestampu
-      messages.sort((a, b) => a.ts - b.ts);
+  // Funkce pro vykreslení zprávy
+  function renderMessage(msgId, msg) {
+    if (renderedIds.has(msgId)) return;
+    renderedIds.add(msgId);
+    const isMe = msg.from === currentUser.id;
+    const div = document.createElement("div");
+    div.className = "messageRow";
 
-      // vykreslit všechny zprávy
-      messages.forEach(msg => {
-        const isMe = msg.from === currentUser.id;
-        const senderName = isMe ? currentUser.name : currentChatName;
-        const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : "https://via.placeholder.com/30";
-        const div = document.createElement("div");
-        div.className = "messageRow";
-        div.innerHTML = `<div class="senderName"><img src="${photo}">${senderName}</div>
+    if (isMe) {
+      div.innerHTML = `<div class="senderName"><img src="${currentUser.photo||'https://via.placeholder.com/30'}">${currentUser.name}</div>
+                       <div class="messageText">${msg.text}</div>`;
+      msgDiv.appendChild(div);
+    } else {
+      db.ref("users/" + msg.from).once("value").then(uSnap => {
+        const uData = uSnap.val();
+        div.innerHTML = `<div class="senderName"><img src="${uData.photo||'https://via.placeholder.com/30'}">${uData.name}</div>
                          <div class="messageText">${msg.text}</div>`;
         msgDiv.appendChild(div);
+        msgDiv.scrollTop = msgDiv.scrollHeight;
       });
+      return;
+    }
+    msgDiv.scrollTop = msgDiv.scrollHeight;
+  }
 
-      msgDiv.scrollTop = msgDiv.scrollHeight;
+  // 1️⃣ Načíst staré zprávy seřazené podle ts
+  db.ref("privateChats/" + currentChatId + "/messages").orderByChild("ts").once("value").then(snap=>{
+    snap.forEach(child=>{
+      renderMessage(child.key, child.val());
     });
+  });
+
+  // 2️⃣ Listener pro nové zprávy
+  db.ref("privateChats/" + currentChatId + "/messages").orderByChild("ts").limitToLast(1).on("child_added", snap=>{
+    renderMessage(snap.key, snap.val());
+  });
 }
 </script>
-
 </body>
 </html>
