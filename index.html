@@ -316,35 +316,42 @@ function sendMessage() {
 // Load messages
 function loadMessages() {
   const msgDiv = document.getElementById("chatMessages");
-  db.ref("privateChats/" + currentChatId + "/messages").off();
-  db.ref("privateChats/" + currentChatId + "/messages")
-    .orderByChild("ts") // přidáno
-    .limitToLast(50)
-    .on("child_added", snap => {
-      const msg = snap.val();
-      const isMe = msg.from === currentUser.id;
+  msgDiv.innerHTML = "";
 
-      if (isMe) {
-        const div = document.createElement("div");
-        div.className = "messageRow";
-        div.innerHTML = `<div class="senderName"><img src="${currentUser.photo || 'https://via.placeholder.com/30'}">${currentUser.name}</div>
-                         <div class="messageText">${msg.text}</div>`;
-        msgDiv.appendChild(div);
-      } else {
-        db.ref("users/" + msg.from).once("value", uSnap => {
-          const userData = uSnap.val();
-          const photo = userData?.photo || "https://via.placeholder.com/30";
+  db.ref("privateChats/" + currentChatId + "/messages")
+    .orderByChild("ts")
+    .once("value", snap => {
+      const messages = [];
+      snap.forEach(child => {
+        messages.push({ id: child.key, ...child.val() });
+      });
+
+      // vykreslit zprávy podle času
+      messages.forEach(msg => {
+        const isMe = msg.from === currentUser.id;
+        if (isMe) {
           const div = document.createElement("div");
           div.className = "messageRow";
-          div.innerHTML = `<div class="senderName"><img src="${photo}">${userData.name}</div>
+          div.innerHTML = `<div class="senderName"><img src="${currentUser.photo || 'https://via.placeholder.com/30'}">${currentUser.name}</div>
                            <div class="messageText">${msg.text}</div>`;
           msgDiv.appendChild(div);
-        });
-      }
+        } else {
+          db.ref("users/" + msg.from).once("value", uSnap => {
+            const userData = uSnap.val();
+            const photo = userData?.photo || "https://via.placeholder.com/30";
+            const div = document.createElement("div");
+            div.className = "messageRow";
+            div.innerHTML = `<div class="senderName"><img src="${photo}">${userData.name}</div>
+                             <div class="messageText">${msg.text}</div>`;
+            msgDiv.appendChild(div);
+          });
+        }
+      });
 
       msgDiv.scrollTop = msgDiv.scrollHeight;
     });
 }
+
 
 </script>
 
