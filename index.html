@@ -72,6 +72,7 @@ body, html {
 }
 
 .messageRow .messageText { flex:1; word-break: break-word; }
+
 </style>
 </head>
 <body>
@@ -85,8 +86,7 @@ body, html {
   <img id="profilePic" src="" alt="Profilovka">
   <div id="profileName"></div>
   <div id="profileEmail"></div>
-  <input type="text" id="profileURL" placeholder="URL profilovky"><br><br>
-  <button id="updatePicBtn">Uložit profilovku</button>
+  <input type="file" id="uploadPic"><br><br>
   <button id="panelLogoutBtn">Odhlásit se</button>
 </div>
 
@@ -147,7 +147,10 @@ const db = firebase.database();
 let currentUser=null,currentChatId=null,currentChatName=null;
 
 // Persistent login
-window.onload=()=>{ const savedUser=localStorage.getItem("currentUser"); if(savedUser){currentUser=JSON.parse(savedUser);showMainScreen();} };
+window.onload=()=>{
+  const savedUser=localStorage.getItem("currentUser");
+  if(savedUser){currentUser=JSON.parse(savedUser);showMainScreen();}
+};
 
 // Registrace
 document.getElementById("regBtn").onclick=()=>{
@@ -209,21 +212,22 @@ profileBtn.onclick=(e)=>{e.stopPropagation(); profilePanel.style.display=profile
 document.body.addEventListener("click",()=>{profilePanel.style.display="none";});
 profilePanel.addEventListener("click",e=>{e.stopPropagation();});
 
-// Update profile pic via URL
-document.getElementById("updatePicBtn").onclick=()=>{
-  const url=document.getElementById("profileURL").value.trim();
-  if(!url){alert("Zadej URL profilovky"); return;}
-  db.ref("users/"+currentUser.id+"/photo").set(url);
-  currentUser.photo=url;
-  localStorage.setItem("currentUser",JSON.stringify(currentUser));
-  document.getElementById("profilePic").src=url;
-  loadChatList();
+// Upload profile pic
+document.getElementById("uploadPic").onchange=(e)=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(evt){
+    const url=evt.target.result;
+    db.ref("users/"+currentUser.id).update({photo:url});
+    currentUser.photo=url;
+    document.getElementById("profilePic").src=url;
+  };
+  reader.readAsDataURL(file);
 };
 
 // Chat list
 function loadChatList(){
-  const chatListDiv=document.getElementById("chatList");
-  chatListDiv.innerHTML="";
+  const chatListDiv=document.getElementById("chatList"); chatListDiv.innerHTML="";
   db.ref("privateChats").once("value",snap=>{
     snap.forEach(chatSnap=>{
       const chatId=chatSnap.key;
