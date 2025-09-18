@@ -47,9 +47,13 @@ body, html {
 #chatInput input { flex:1; padding:5px; border:1px solid #ccc; border-radius:4px; }
 #chatInput button { padding:5px 10px; margin-left:5px; border:none; border-radius:4px; background:#0088cc; color:#fff; cursor:pointer; }
 
-.userItem { padding:10px; border-bottom:1px solid #eee; cursor:pointer; display:flex; align-items:center; }
+.userItem { padding:10px; border-bottom:1px solid #eee; cursor:pointer; display:flex; align-items:center; position:relative; }
 .userItem img { width:30px; height:30px; border-radius:50%; margin-right:10px; }
 .userItem:hover { background:#eee; }
+
+.contactMenuBtn { margin-left:auto; cursor:pointer; }
+
+.contactMenu { position:absolute; background:#fff; border:1px solid #ccc; padding:5px; z-index:100; right:5px; top:35px; display:none; }
 
 #searchContainer { display:none; flex-direction:column; padding:10px; }
 #searchContainer input { padding:5px; margin-bottom:5px; border:1px solid #ccc; border-radius:4px; }
@@ -63,15 +67,15 @@ body, html {
 }
 
 .messageRow .senderName {
-  width:90px; font-weight:bold; color:#0088cc;
+  width:34px; /* pouze pro profilovku */
   display:flex; align-items:center;
 }
 
 .messageRow .senderName img {
-  width:30px; height:30px; border-radius:50%; margin-right:5px;
+  width:24px; height:24px; border-radius:50%;
 }
 
-.messageRow .messageText { flex:1; word-break: break-word; }
+.messageRow .messageText { flex:1; word-break: break-word; padding-left:5px; }
 
 </style>
 </head>
@@ -85,7 +89,7 @@ body, html {
 <div id="profilePanel">
   <img id="profilePic" src="" alt="Profilovka">
   <div id="profileName"></div>
-  <div id="profileEmail"></div>
+  <div id="profileUsername"></div>
   <input type="file" id="uploadPic"><br><br>
   <button id="panelLogoutBtn">Odhlásit se</button>
 </div>
@@ -95,12 +99,12 @@ body, html {
   <h2>🔥 Přihlášení do chatu</h2>
   <div id="registerForm">
     <input type="text" id="regName" placeholder="Jméno" required><br>
-    <input type="email" id="regEmail" placeholder="Email" required><br>
+    <input type="text" id="regUsername" placeholder="Username" required><br>
     <input type="password" id="regPass" placeholder="Heslo" required><br>
     <button id="regBtn">Registrovat</button>
   </div>
   <div id="loginForm" style="margin-top:10px;">
-    <input type="email" id="loginEmail" placeholder="Email" required><br>
+    <input type="text" id="loginUsername" placeholder="Username" required><br>
     <input type="password" id="loginPass" placeholder="Heslo" required><br>
     <button id="loginBtn">Přihlásit se</button>
   </div>
@@ -144,7 +148,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let currentUser = null, currentChatId = null, currentChatName = null;
+let currentUser = null, currentChatId = null, currentChatName = null, messagesListener = null;
 
 // Persistent login
 window.onload = () => {
@@ -153,7 +157,7 @@ window.onload = () => {
     currentUser = JSON.parse(savedUser);
     db.ref("users/" + currentUser.id).once("value", snap => {
       const data = snap.val();
-      currentUser = { id: currentUser.id, name: data.name, email: data.email, photo: data.photo||"" };
+      currentUser = { id: currentUser.id, name: data.name, username: data.username, photo: data.photo||"" };
       showMainScreen();
     });
   }
@@ -162,31 +166,31 @@ window.onload = () => {
 // Registrace
 document.getElementById("regBtn").onclick = () => {
   const name = document.getElementById("regName").value.trim();
-  const email = document.getElementById("regEmail").value.trim();
+  const username = document.getElementById("regUsername").value.trim();
   const pass = document.getElementById("regPass").value.trim();
-  if (!name || !email || !pass) { alert("Vyplň všechna pole"); return; }
+  if (!name || !username || !pass) { alert("Vyplň všechna pole"); return; }
 
-  db.ref("users").orderByChild("email").equalTo(email).once("value", snap => {
-    if (snap.exists()) { alert("Email už existuje"); return; }
+  db.ref("users").orderByChild("username").equalTo(username).once("value", snap => {
+    if (snap.exists()) { alert("Username už existuje"); return; }
     const newUserRef = db.ref("users").push();
-    newUserRef.set({ name, email, password: pass, photo: "" });
+    newUserRef.set({ name, username, password: pass, photo: "" });
     alert("Registrace úspěšná! Přihlaš se.");
   });
 };
 
 // Login
 document.getElementById("loginBtn").onclick = () => {
-  const email = document.getElementById("loginEmail").value.trim();
+  const username = document.getElementById("loginUsername").value.trim();
   const pass = document.getElementById("loginPass").value.trim();
-  if (!email || !pass) { alert("Vyplň email i heslo"); return; }
+  if (!username || !pass) { alert("Vyplň username i heslo"); return; }
 
-  db.ref("users").orderByChild("email").equalTo(email).once("value", snap => {
-    if (!snap.exists()) { alert("Email nenalezen"); return; }
+  db.ref("users").orderByChild("username").equalTo(username).once("value", snap => {
+    if (!snap.exists()) { alert("Username nenalezen"); return; }
     let found = false;
     snap.forEach(child => {
       const data = child.val();
       if (data.password === pass) {
-        currentUser = { id: child.key, name: data.name, email: data.email, photo: data.photo||"" };
+        currentUser = { id: child.key, name: data.name, username: data.username, photo: data.photo||"" };
         localStorage.setItem("currentUser", JSON.stringify(currentUser));
         showMainScreen();
         found = true;
@@ -201,7 +205,7 @@ function showMainScreen() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("mainScreen").style.display = "flex";
   document.getElementById("profileName").innerText = currentUser.name;
-  document.getElementById("profileEmail").innerText = currentUser.email;
+  document.getElementById("profileUsername").innerText = currentUser.username;
   document.getElementById("profilePic").src = currentUser.photo || "https://via.placeholder.com/50";
   loadChatList();
 }
@@ -235,23 +239,15 @@ document.getElementById("uploadPic").onchange = (e) => {
   reader.readAsDataURL(file);
 };
 
-// Chat list
+// Chat list + menu
 let chatListListener = null;
-
 function loadChatList() {
   const chatListDiv = document.getElementById("chatList");
   chatListDiv.innerHTML = "";
-
-  // Odpojit předchozí listener
-  if (chatListListener) {
-    chatListListener.off();
-  }
-
-  // Listener pro živý chat list
+  if (chatListListener) chatListListener.off();
   chatListListener = db.ref("privateChats");
   chatListListener.on("value", snap => {
-    chatListDiv.innerHTML = ""; // vyčistit seznam
-
+    chatListDiv.innerHTML = "";
     snap.forEach(chatSnap => {
       const chatId = chatSnap.key;
       if (chatId.includes(currentUser.id)) {
@@ -259,13 +255,68 @@ function loadChatList() {
         db.ref("users/" + otherId).once("value", uSnap => {
           const userName = uSnap.val()?.name || "Neznámý";
           const photo = uSnap.val()?.photo || "https://via.placeholder.com/30";
-
-          // Zkontrolujeme, jestli už element existuje, aby se nepřidával dvakrát
           if (!document.getElementById("chatUser_" + otherId)) {
             const div = document.createElement("div");
             div.className = "userItem";
             div.id = "chatUser_" + otherId;
-            div.innerHTML = `<img src="${photo}">${userName}`;
+
+            const img = document.createElement("img");
+            img.src = photo;
+            const nameSpan = document.createElement("span");
+            nameSpan.innerText = userName;
+            div.appendChild(img);
+            div.appendChild(nameSpan);
+
+            // Menu tlačítko
+            const menuBtn = document.createElement("div");
+            menuBtn.className = "contactMenuBtn";
+            menuBtn.innerText = "⋮";
+            menuBtn.style.marginLeft = "auto";
+            menuBtn.style.cursor = "pointer";
+
+            const menu = document.createElement("div");
+            menu.className = "contactMenu";
+            menu.style.display = "none";
+            menu.innerHTML = `<div class="deleteChat">Smazat chat</div>
+                              <div class="blockChat">Blokovat</div>`;
+
+            menuBtn.onclick = (e) => { 
+              e.stopPropagation(); 
+              menu.style.display = menu.style.display === "block" ? "none" : "block"; 
+            };
+
+            div.appendChild(menuBtn);
+            div.style.position = "relative";
+            div.appendChild(menu);
+
+            menu.querySelector(".deleteChat").onclick = (e) => {
+              e.stopPropagation();
+              if (confirm("Opravdu chcete smazat tento chat pro oba uživatele?")) {
+                db.ref("privateChats/" + chatId).remove();
+                menu.style.display = "none";
+              }
+            };
+
+            menu.querySelector(".blockChat").onclick = (e) => {
+              e.stopPropagation();
+              const blockedRef = db.ref("users/" + currentUser.id + "/blocked");
+              blockedRef.once("value", snap => {
+                const blocked = snap.val() || {};
+                if (blocked[otherId]) {
+                  delete blocked[otherId];
+                  blockedRef.set(blocked);
+                  menu.querySelector(".blockChat").innerText = "Blokovat";
+                  alert("Uživatel odblokován");
+                } else {
+                  blocked[otherId] = true;
+                  blockedRef.set(blocked);
+                  menu.querySelector(".blockChat").innerText = "Odblokovat";
+                  alert("Uživatel zablokován");
+                }
+                menu.style.display = "none";
+              });
+            };
+
             div.onclick = () => openChat(otherId, userName);
             chatListDiv.appendChild(div);
           }
@@ -274,7 +325,6 @@ function loadChatList() {
     });
   });
 }
-
 
 // New chat search
 document.getElementById("newChatBtn").onclick = () => {
@@ -307,17 +357,6 @@ document.getElementById("searchInput").oninput = (e) => {
   });
 };
 
-// Open chat
-function openChat(otherId, otherName) {
-  if (otherId === currentUser.id) { alert("Nemůžeš si psát sám sobě!"); return; }
-  const ids = [currentUser.id, otherId].sort();
-  currentChatId = ids.join("_");
-  currentChatName = otherName;
-  document.getElementById("chatHeader").innerText = otherName;
-  document.getElementById("chatMessages").innerHTML = "";
-  loadMessages();
-}
-
 // Send message
 document.getElementById("sendBtn").onclick = sendMessage;
 document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
@@ -332,71 +371,38 @@ function sendMessage() {
   document.getElementById("msgInput").value = "";
 }
 
-// Load messages
-function loadMessages() {
-  const msgDiv = document.getElementById("chatMessages");
-  msgDiv.innerHTML = "";
-
-  db.ref("privateChats/" + currentChatId + "/messages")
-    .once("value")
-    .then(snap => {
-      const messages = [];
-      snap.forEach(child => {
-        messages.push(child.val());
-      });
-
-      // setřídit podle timestampu
-      messages.sort((a, b) => a.ts - b.ts);
-
-      // vykreslit všechny zprávy
-      messages.forEach(msg => {
-        const isMe = msg.from === currentUser.id;
-        const senderName = isMe ? currentUser.name : currentChatName;
-        const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : "https://via.placeholder.com/30";
-        const div = document.createElement("div");
-        div.className = "messageRow";
-        div.innerHTML = `<div class="senderName"><img src="${photo}">${senderName}</div>
-                         <div class="messageText">${msg.text}</div>`;
-        msgDiv.appendChild(div);
-      });
-
-      msgDiv.scrollTop = msgDiv.scrollHeight;
-    });
-}
-let messagesListener = null;
-
+// Open chat with only profile pics
 function openChat(otherId, otherName) {
   if (otherId === currentUser.id) { alert("Nemůžeš si psát sám sobě!"); return; }
-  const ids = [currentUser.id, otherId].sort();
-  currentChatId = ids.join("_");
-  currentChatName = otherName;
-  document.getElementById("chatHeader").innerText = otherName;
-  document.getElementById("chatMessages").innerHTML = "";
 
-  // Odpojit starý listener
-  if (messagesListener) {
-    messagesListener.off();
-  }
+  db.ref("users/" + otherId).once("value", uSnap => {
+    const otherUserPhoto = uSnap.val()?.photo || "https://via.placeholder.com/30";
 
-  // Nastavit nového listenera pro živé zprávy
-  messagesListener = db.ref("privateChats/" + currentChatId + "/messages");
-  messagesListener.on("child_added", snap => {
-    const msg = snap.val();
-    const isMe = msg.from === currentUser.id;
-    const senderName = isMe ? currentUser.name : currentChatName;
-    const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : "https://via.placeholder.com/30";
+    const ids = [currentUser.id, otherId].sort();
+    currentChatId = ids.join("_");
+    currentChatName = otherName;
+    document.getElementById("chatHeader").innerText = otherName;
+    document.getElementById("chatMessages").innerHTML = "";
 
-    const div = document.createElement("div");
-    div.className = "messageRow";
-    div.innerHTML = `<div class="senderName"><img src="${photo}">${senderName}</div>
-                     <div class="messageText">${msg.text}</div>`;
+    if (messagesListener) messagesListener.off();
 
-    const msgDiv = document.getElementById("chatMessages");
-    msgDiv.appendChild(div);
-    msgDiv.scrollTop = msgDiv.scrollHeight;
+    messagesListener = db.ref("privateChats/" + currentChatId + "/messages");
+    messagesListener.on("child_added", snap => {
+      const msg = snap.val();
+      const isMe = msg.from === currentUser.id;
+      const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : otherUserPhoto;
+
+      const div = document.createElement("div");
+      div.className = "messageRow";
+      div.innerHTML = `<div class="senderName"><img src="${photo}"></div>
+                       <div class="messageText">${msg.text}</div>`;
+
+      const msgDiv = document.getElementById("chatMessages");
+      msgDiv.appendChild(div);
+      msgDiv.scrollTop = msgDiv.scrollHeight;
+    });
   });
 }
-
 </script>
 
 </body>

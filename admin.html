@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Admin - Správa uživatelů</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body, html {
+  margin:0; padding:0; font-family: 'Roboto', sans-serif; background:#f7f7f7;
+}
+
+header {
+  background:#0088cc; color:#fff; padding:10px; font-size:20px; font-weight:bold;
+  text-align:center;
+}
+
+#userList { width:90%; margin:20px auto; border-collapse: collapse; }
+#userList th, #userList td { padding:10px; border:1px solid #ccc; text-align:left; }
+#userList th { background:#eee; }
+
+button { padding:5px 10px; border:none; border-radius:4px; cursor:pointer; }
+.deleteBtn { background:#e74c3c; color:#fff; }
+.editBtn { background:#f1c40f; color:#fff; }
+
+input[type="password"], input[type="text"] { padding:5px; border:1px solid #ccc; border-radius:4px; width:100%; margin-bottom:10px; }
+</style>
+</head>
+<body>
+
+<header>Admin - Správa uživatelů</header>
+
+<table id="userList">
+  <thead>
+    <tr>
+      <th>Jméno</th>
+      <th>Username</th>
+      <th>Profilovka</th>
+      <th>Akce</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Popup pro změnu hesla a username -->
+<div id="editPopup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  background:#fff; border:1px solid #ccc; padding:20px; z-index:1000; width:300px;">
+  <h3>Upravit uživatele</h3>
+  <label>Nový username:</label>
+  <input type="text" id="newUsername" placeholder="Username"><br>
+  <label>Nové heslo:</label>
+  <input type="password" id="newPassword" placeholder="Heslo"><br>
+  <button id="saveBtn">Uložit změny</button>
+  <button onclick="document.getElementById('editPopup').style.display='none'">Zavřít</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
+  authDomain: "chat-a99ee.firebaseapp.com",
+  projectId: "chat-a99ee",
+  storageBucket: "chat-a99ee.appspot.com",
+  messagingSenderId: "558124959244",
+  appId: "1:558124959244:web:e603b56a1fbd9c2d12d029",
+  measurementId: "G-2C6T31PMGS"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let editUserId = null;
+
+// Načtení všech uživatelů
+function loadUsers() {
+  const tbody = document.querySelector("#userList tbody");
+  tbody.innerHTML = "";
+  db.ref("users").once("value", snap => {
+    snap.forEach(userSnap => {
+      const data = userSnap.val();
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${data.name}</td>
+        <td>${data.username}</td>
+        <td><img src="${data.photo || 'https://via.placeholder.com/30'}" width="30" height="30"></td>
+        <td>
+          <button class="editBtn">Upravit</button>
+          <button class="deleteBtn">Smazat účet</button>
+        </td>
+      `;
+
+      // Delete
+      tr.querySelector(".deleteBtn").onclick = () => {
+        if(confirm("Opravdu smazat tento účet?")) {
+          db.ref("users/" + userSnap.key).remove();
+          loadUsers();
+        }
+      };
+
+      // Edit (username + password)
+      tr.querySelector(".editBtn").onclick = () => {
+        editUserId = userSnap.key;
+        document.getElementById("newUsername").value = data.username || "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("editPopup").style.display = "block";
+      };
+
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+// Uložit změny (username + heslo)
+document.getElementById("saveBtn").onclick = () => {
+  const newUsername = document.getElementById("newUsername").value.trim();
+  const newPass = document.getElementById("newPassword").value.trim();
+
+  if(!newUsername) { alert("Username nesmí být prázdný"); return; }
+
+  const updates = { username: newUsername };
+  if(newPass) updates.password = newPass;
+
+  db.ref("users/" + editUserId).update(updates);
+  document.getElementById("editPopup").style.display = "none";
+  alert("Změny uloženy");
+  loadUsers();
+};
+
+loadUsers();
+</script>
+
+</body>
+</html>
