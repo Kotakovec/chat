@@ -332,7 +332,6 @@ function loadMessages() {
                          <div class="messageText">${msg.text}</div>`;
         msgDiv.appendChild(div);
       } else {
-        // Načíst profilovku odesílatele pouze pokud ještě není v msg objektu
         if (!msg.photo) {
           db.ref("users/" + msg.from).once("value").then(uSnap => {
             const uData = uSnap.val();
