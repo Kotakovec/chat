@@ -318,32 +318,55 @@ function loadMessages() {
   const msgDiv = document.getElementById("chatMessages");
   msgDiv.innerHTML = "";
 
+  // 1️⃣ Načíst všechny existující zprávy jednorázově
   db.ref("privateChats/" + currentChatId + "/messages")
+    .orderByChild("ts")
     .once("value")
     .then(snap => {
       const messages = [];
-      snap.forEach(child => {
-        messages.push(child.val());
-      });
+      snap.forEach(child => messages.push({ id: child.key, ...child.val() }));
 
-      // setřídit podle timestampu
-      messages.sort((a, b) => a.ts - b.ts);
-
-      // vykreslit všechny zprávy
-      messages.forEach(msg => {
-        const isMe = msg.from === currentUser.id;
-        const senderName = isMe ? currentUser.name : currentChatName;
-        const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : "https://via.placeholder.com/30";
-        const div = document.createElement("div");
-        div.className = "messageRow";
-        div.innerHTML = `<div class="senderName"><img src="${photo}">${senderName}</div>
-                         <div class="messageText">${msg.text}</div>`;
-        msgDiv.appendChild(div);
-      });
-
+      messages.forEach(msg => renderMessage(msg));
       msgDiv.scrollTop = msgDiv.scrollHeight;
     });
+
+  // 2️⃣ Přidat listener pro nové zprávy (live update)
+  db.ref("privateChats/" + currentChatId + "/messages")
+    .orderByChild("ts")
+    .limitToLast(1)
+    .on("child_added", snap => {
+      const msg = snap.val();
+      // pokud už jsme tuto zprávu vykreslili při načtení starých, přeskočíme
+      if (document.getElementById(msg.id)) return;
+      renderMessage(msg);
+    });
+
+  function renderMessage(msg) {
+    const msgDiv = document.getElementById("chatMessages");
+    const isMe = msg.from === currentUser.id;
+
+    if (isMe) {
+      const div = document.createElement("div");
+      div.className = "messageRow";
+      div.id = msg.id;
+      div.innerHTML = `<div class="senderName"><img src="${currentUser.photo || 'https://via.placeholder.com/30'}">${currentUser.name}</div>
+                       <div class="messageText">${msg.text}</div>`;
+      msgDiv.appendChild(div);
+    } else {
+      db.ref("users/" + msg.from).once("value").then(uSnap => {
+        const uData = uSnap.val();
+        const div = document.createElement("div");
+        div.className = "messageRow";
+        div.id = msg.id;
+        div.innerHTML = `<div class="senderName"><img src="${uData.photo || 'https://via.placeholder.com/30'}">${uData.name}</div>
+                         <div class="messageText">${msg.text}</div>`;
+        msgDiv.appendChild(div);
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+      });
+    }
+  }
 }
+
 </script>
 
 </body>
