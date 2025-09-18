@@ -4,23 +4,59 @@
 <meta charset="UTF-8">
 <title>Telegram-style Chat</title>
 <style>
-body, html { margin:0; padding:0; height:100%; font-family: Arial; }
-#loginScreen, #mainScreen { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body, html {
+  margin:0; padding:0; height:100%; 
+  font-family: 'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif;
+  background:#f7f7f7;
+}
+
+#loginScreen, #mainScreen {
+  width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+
 #mainScreen { display:none; }
+
 #chatContainer { display:flex; width:100%; height:100%; }
-#leftPanel { width:25%; border-right:1px solid #ccc; display:flex; flex-direction:column; }
+
+#leftPanel { width:25%; border-right:1px solid #ccc; display:flex; flex-direction:column; background:#fff; }
 #rightPanel { flex:1; display:flex; flex-direction:column; }
-#chatHeader { padding:10px; border-bottom:1px solid #ccc; background:#f0f0f0; }
+
+#chatHeader { padding:10px; border-bottom:1px solid #ccc; background:#f0f0f0; font-weight:bold; }
+
 #chatMessages { flex:1; padding:10px; overflow-y:auto; background:#fafafa; }
-#chatInput { display:flex; padding:5px; border-top:1px solid #ccc; }
-#chatInput input { flex:1; padding:5px; }
-#chatInput button { padding:5px 10px; margin-left:5px; }
+
+#chatInput { display:flex; padding:5px; border-top:1px solid #ccc; background:#f0f0f0; }
+#chatInput input { flex:1; padding:5px; border:1px solid #ccc; border-radius:4px; }
+#chatInput button { padding:5px 10px; margin-left:5px; border:none; border-radius:4px; background:#0088cc; color:#fff; cursor:pointer; }
+
 .userItem { padding:10px; border-bottom:1px solid #eee; cursor:pointer; }
 .userItem:hover { background:#eee; }
+
 #searchContainer { display:none; flex-direction:column; padding:10px; }
-#searchContainer input { padding:5px; margin-bottom:5px; }
+#searchContainer input { padding:5px; margin-bottom:5px; border:1px solid #ccc; border-radius:4px; }
+
 #chatList { flex:1; overflow-y:auto; }
-#logoutBtn { margin:5px; }
+
+#logoutBtn, #newChatBtn { margin:5px; padding:5px 10px; border:none; border-radius:4px; cursor:pointer; background:#0088cc; color:#fff; }
+
+.messageRow {
+  display:flex;
+  align-items:flex-start;
+  margin-bottom:5px;
+}
+
+.messageRow .senderName {
+  width:90px; /* pevná šířka jména */
+  font-weight:bold;
+  color:#0088cc;
+}
+
+.messageRow .messageText {
+  flex:1;
+  word-break: break-word;
+}
 </style>
 </head>
 <body>
@@ -225,7 +261,8 @@ function loadMessages(){
       const msg = snap.val();
       const sender = msg.from===currentUser.id ? currentUser.name : currentChatName;
       const div = document.createElement("div");
-      div.innerHTML=`<b>${sender}:</b> ${msg.text}`;
+      div.className = "messageRow";
+      div.innerHTML = `<div class="senderName">${sender}</div><div class="messageText">${msg.text}</div>`;
       msgDiv.appendChild(div);
       msgDiv.scrollTop = msgDiv.scrollHeight;
     });
