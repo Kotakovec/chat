@@ -26,6 +26,7 @@ body, html {
 }
 
 #profilePanel img { width:50px; height:50px; border-radius:50%; margin-bottom:10px; }
+#profilePanel button { width:100%; margin-top:10px; padding:5px; border:none; border-radius:4px; background:#0088cc; color:#fff; cursor:pointer; }
 
 #loginScreen, #mainScreen {
   width:100%; height:calc(100% - 50px); display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -55,8 +56,6 @@ body, html {
 
 #chatList { flex:1; overflow-y:auto; }
 
-#logoutBtn, #newChatBtn, #emojiBtn { margin:5px; padding:5px 10px; border:none; border-radius:4px; cursor:pointer; background:#0088cc; color:#fff; }
-
 .messageRow {
   display:flex;
   align-items:flex-start;
@@ -74,8 +73,7 @@ body, html {
 
 .messageRow .messageText { flex:1; word-break: break-word; }
 
-#emojiMenu { position:absolute; bottom:40px; left:5px; background:#fff; border:1px solid #ccc; display:none; padding:5px; max-height:150px; overflow-y:auto; z-index:1000; }
-
+#emojiMenu { position:absolute; bottom:40px; left:0; background:#fff; border:1px solid #ccc; display:none; padding:5px; max-height:150px; overflow-y:auto; z-index:1000; }
 #emojiMenu img { width:30px; height:30px; cursor:pointer; margin:2px; }
 </style>
 </head>
@@ -91,6 +89,7 @@ body, html {
   <div id="profileName"></div>
   <div id="profileEmail"></div>
   <input type="file" id="uploadPic"><br><br>
+  <button id="panelLogoutBtn">Odhlásit se</button>
 </div>
 
 <!-- Login Screen -->
@@ -114,9 +113,6 @@ body, html {
   <div style="display:flex; width:100%; height:100%;">
     <div id="leftPanel">
       <button id="newChatBtn">Zahájit chat</button>
-      <button id="logoutBtn">Odhlásit se</button>
-      <button id="emojiBtn">😊</button>
-      <div id="emojiMenu"></div>
       <div id="searchContainer">
         <input type="text" id="searchInput" placeholder="Vyhledej uživatele">
         <div id="searchResults"></div>
@@ -128,7 +124,9 @@ body, html {
       <div id="chatMessages"></div>
       <div id="chatInput">
         <input type="text" id="msgInput" placeholder="Napiš zprávu...">
+        <button id="emojiBtn">😊</button>
         <button id="sendBtn">Odeslat</button>
+        <div id="emojiMenu"></div>
       </div>
     </div>
   </div>
@@ -173,73 +171,8 @@ function showMainScreen(){
   loadEmoji();
 }
 
-// CHAT LIST
-function loadChatList(){
-  const chatListDiv=document.getElementById("chatList"); chatListDiv.innerHTML="";
-  db.ref("privateChats").once("value",snap=>{
-    snap.forEach(chatSnap=>{
-      const chatId=chatSnap.key;
-      if(chatId.includes(currentUser.id)){
-        const otherId=chatId.replace(currentUser.id+"_","").replace("_"+currentUser.id,"");
-        db.ref("users/"+otherId).once("value",uSnap=>{
-          const data=uSnap.val(); const userName=data?.name||"Neznámý"; const photo=data?.photo||"https://via.placeholder.com/30";
-          const div=document.createElement("div"); div.className="userItem"; div.innerHTML=`<img src="${photo}">${userName}`;
-          div.onclick=()=>openChat(otherId,userName); chatListDiv.appendChild(div);
-        });
-      }
-    });
-  });
-}
-
-// NEW CHAT
-document.getElementById("newChatBtn").onclick=()=>{
-  const searchContainer=document.getElementById("searchContainer");
-  searchContainer.style.display=searchContainer.style.display==="flex"?"none":"flex";
-  document.getElementById("searchInput").value=""; document.getElementById("searchResults").innerHTML="";
-};
-
-// SEARCH USERS
-document.getElementById("searchInput").oninput=(e)=>{
-  const val=e.target.value.toLowerCase();
-  const resultsDiv=document.getElementById("searchResults"); resultsDiv.innerHTML="";
-  if(!val)return;
-  db.ref("users").once("value",snap=>{
-    snap.forEach(uSnap=>{
-      const data=uSnap.val(); if(data.name.toLowerCase().includes(val)&&uSnap.key!==currentUser.id){
-        const div=document.createElement("div"); div.className="userItem"; div.innerText=data.name;
-        div.onclick=()=>{openChat(uSnap.key,data.name);document.getElementById("searchContainer").style.display="none";};
-        resultsDiv.appendChild(div);
-      }
-    });
-  });
-};
-
-// OPEN CHAT
-function openChat(otherId,otherName){currentChatId=[currentUser.id,otherId].sort().join("_");currentChatName=otherName;document.getElementById("chatHeader").innerText=otherName;document.getElementById("chatMessages").innerHTML="";loadMessages();}
-
-// SEND MESSAGE (ENTER & BUTTON)
-document.getElementById("sendBtn").onclick=sendMessage;
-document.getElementById("msgInput").addEventListener("keypress",e=>{if(e.key==="Enter")sendMessage();});
-function sendMessage(){
-  const text=document.getElementById("msgInput").value.trim(); if(!text||!currentChatId)return;
-  db.ref("privateChats/"+currentChatId+"/messages").push({from:currentUser.id,text:text,ts:Date.now()});
-  document.getElementById("msgInput").value="";
-}
-
-// LOAD MESSAGES
-function loadMessages(){
-  const msgDiv=document.getElementById("chatMessages"); db.ref("privateChats/"+currentChatId+"/messages").off();
-  db.ref("privateChats/"+currentChatId+"/messages").limitToLast(50).on("child_added",snap=>{
-    const msg=snap.val(); const sender=msg.from===currentUser.id?currentUser.name:currentChatName;
-    const senderPhoto=msg.from===currentUser.id?currentUser.photo:"https://via.placeholder.com/30";
-    const div=document.createElement("div"); div.className="messageRow";
-    div.innerHTML=`<div class="senderName"><img src="${senderPhoto}">${sender}</div><div class="messageText">${msg.text}</div>`;
-    msgDiv.appendChild(div); msgDiv.scrollTop=msgDiv.scrollHeight;
-   });
-};
-
 // LOGOUT
-document.getElementById("logoutBtn").onclick=()=>{
+document.getElementById("panelLogoutBtn").onclick=()=>{
   currentUser=null;
   localStorage.removeItem("currentUser");
   document.getElementById("mainScreen").style.display="none";
@@ -249,10 +182,7 @@ document.getElementById("logoutBtn").onclick=()=>{
 // PROFILE PANEL TOGGLE
 const profileBtn=document.getElementById("profileBtn");
 const profilePanel=document.getElementById("profilePanel");
-profileBtn.onclick=(e)=>{
-  e.stopPropagation();
-  profilePanel.style.display=profilePanel.style.display==="block"?"none":"block";
-};
+profileBtn.onclick=(e)=>{e.stopPropagation(); profilePanel.style.display=profilePanel.style.display==="block"?"none":"block";}
 document.body.addEventListener("click",()=>{profilePanel.style.display="none";});
 profilePanel.addEventListener("click",e=>{e.stopPropagation();});
 
@@ -271,12 +201,105 @@ document.getElementById("uploadPic").onchange=(e)=>{
   reader.readAsDataURL(file);
 };
 
+// CHAT LIST
+function loadChatList(){
+  const chatListDiv=document.getElementById("chatList");
+  chatListDiv.innerHTML="";
+  db.ref("privateChats").once("value",snap=>{
+    snap.forEach(chatSnap=>{
+      const chatId=chatSnap.key;
+      if(chatId.includes(currentUser.id)){
+        const otherId=chatId.replace(currentUser.id+"_","").replace("_"+currentUser.id,"");
+        db.ref("users/"+otherId).once("value",uSnap=>{
+          const userName=uSnap.val()?.name||"Neznámý";
+          const photo=uSnap.val()?.photo||"https://via.placeholder.com/30";
+          const div=document.createElement("div");
+          div.className="userItem";
+          div.innerHTML=`<img src="${photo}">${userName}`;
+          div.onclick=()=>openChat(otherId,userName);
+          chatListDiv.appendChild(div);
+        });
+      }
+    });
+  });
+}
+
+// NEW CHAT SEARCH
+document.getElementById("newChatBtn").onclick=()=>{
+  const sc=document.getElementById("searchContainer");
+  sc.style.display=sc.style.display==="flex"?"none":"flex";
+  document.getElementById("searchInput").value="";
+  document.getElementById("searchResults").innerHTML="";
+};
+document.getElementById("searchInput").oninput=(e)=>{
+  const val=e.target.value.toLowerCase();
+  const resultsDiv=document.getElementById("searchResults");
+  resultsDiv.innerHTML="";
+  if(!val) return;
+  db.ref("users").once("value",snap=>{
+    snap.forEach(uSnap=>{
+      const data=uSnap.val();
+      if(data.name.toLowerCase().includes(val)&&uSnap.key!==currentUser.id){
+        const div=document.createElement("div");
+        div.className="userItem";
+        const photo=data.photo||"https://via.placeholder.com/30";
+        div.innerHTML=`<img src="${photo}">${data.name}`;
+        div.onclick=()=>{
+          openChat(uSnap.key,data.name);
+          document.getElementById("searchContainer").style.display="none";
+        };
+        resultsDiv.appendChild(div);
+      }
+    });
+  });
+};
+
+// OPEN CHAT
+function openChat(otherId,otherName){
+  const ids=[currentUser.id,otherId].sort();
+  currentChatId=ids.join("_");
+  currentChatName=otherName;
+  document.getElementById("chatHeader").innerText=otherName;
+  document.getElementById("chatMessages").innerHTML="";
+  loadMessages();
+}
+
+// SEND MESSAGE
+document.getElementById("sendBtn").onclick=sendMessage;
+document.getElementById("msgInput").addEventListener("keypress",(e)=>{if(e.key==="Enter")sendMessage();});
+function sendMessage(){
+  const text=document.getElementById("msgInput").value.trim();
+  if(!text||!currentChatId)return;
+  db.ref("privateChats/"+currentChatId+"/messages").push({
+    from: currentUser.id,
+    text:text,
+    ts:Date.now()
+  });
+  document.getElementById("msgInput").value="";
+}
+
+// LOAD MESSAGES
+function loadMessages(){
+  const msgDiv=document.getElementById("chatMessages");
+  db.ref("privateChats/"+currentChatId+"/messages").off();
+  db.ref("privateChats/"+currentChatId+"/messages").limitToLast(50)
+    .on("child_added",snap=>{
+      const msg=snap.val();
+      const sender=msg.from===currentUser.id?currentUser.name:currentChatName;
+      const photo=(msg.from===currentUser.id?currentUser.photo:"https://via.placeholder.com/30");
+      const div=document.createElement("div");
+      div.className="messageRow";
+      div.innerHTML=`<div class="senderName"><img src="${photo}">${sender}</div><div class="messageText">${msg.text}</div>`;
+      msgDiv.appendChild(div);
+      msgDiv.scrollTop=msgDiv.scrollHeight;
+    });
+}
+
 // EMOJI MENU
 const emojiBtn=document.getElementById("emojiBtn");
 const emojiMenu=document.getElementById("emojiMenu");
 emojiBtn.onclick=(e)=>{e.stopPropagation(); emojiMenu.style.display=emojiMenu.style.display==="block"?"none":"block";}
 document.body.addEventListener("click",()=>{emojiMenu.style.display="none";});
-
 function loadEmoji(){
   emojiMenu.innerHTML="";
   db.ref("emojis").on("child_added",snap=>{
@@ -288,5 +311,6 @@ function loadEmoji(){
   });
 }
 </script>
+
 </body>
 </html>
