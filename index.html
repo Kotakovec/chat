@@ -317,20 +317,20 @@ function sendMessage() {
 function loadMessages() {
   const msgDiv = document.getElementById("chatMessages");
   db.ref("privateChats/" + currentChatId + "/messages").off();
-  db.ref("privateChats/" + currentChatId + "/messages").limitToLast(50)
+  db.ref("privateChats/" + currentChatId + "/messages")
+    .orderByChild("ts") // přidáno
+    .limitToLast(50)
     .on("child_added", snap => {
       const msg = snap.val();
       const isMe = msg.from === currentUser.id;
-      
+
       if (isMe) {
-        // Moje zpráva
         const div = document.createElement("div");
         div.className = "messageRow";
         div.innerHTML = `<div class="senderName"><img src="${currentUser.photo || 'https://via.placeholder.com/30'}">${currentUser.name}</div>
                          <div class="messageText">${msg.text}</div>`;
         msgDiv.appendChild(div);
       } else {
-        // Získat fotku partnera
         db.ref("users/" + msg.from).once("value", uSnap => {
           const userData = uSnap.val();
           const photo = userData?.photo || "https://via.placeholder.com/30";
@@ -341,6 +341,7 @@ function loadMessages() {
           msgDiv.appendChild(div);
         });
       }
+
       msgDiv.scrollTop = msgDiv.scrollHeight;
     });
 }
