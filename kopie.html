@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Telegram-style Chat</title>
+<style>
+body, html { margin:0; padding:0; height:100%; font-family: Arial; }
+#loginScreen, #mainScreen { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+#mainScreen { display:none; }
+#chatContainer { display:flex; width:100%; height:100%; }
+#leftPanel { width:25%; border-right:1px solid #ccc; display:flex; flex-direction:column; }
+#rightPanel { flex:1; display:flex; flex-direction:column; }
+#chatHeader { padding:10px; border-bottom:1px solid #ccc; background:#f0f0f0; }
+#chatMessages { flex:1; padding:10px; overflow-y:auto; background:#fafafa; }
+#chatInput { display:flex; padding:5px; border-top:1px solid #ccc; }
+#chatInput input { flex:1; padding:5px; }
+#chatInput button { padding:5px 10px; margin-left:5px; }
+.userItem { padding:10px; border-bottom:1px solid #eee; cursor:pointer; }
+.userItem:hover { background:#eee; }
+#searchContainer { display:none; flex-direction:column; padding:10px; }
+#searchContainer input { padding:5px; margin-bottom:5px; }
+#chatList { flex:1; overflow-y:auto; }
+#logoutBtn { margin:5px; }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+  <h2>🔥 Přihlášení do chatu</h2>
+  <div id="registerForm">
+    <input type="text" id="regName" placeholder="Jméno" required><br>
+    <input type="email" id="regEmail" placeholder="Email" required><br>
+    <input type="password" id="regPass" placeholder="Heslo" required><br>
+    <button id="regBtn">Registrovat</button>
+  </div>
+  <div id="loginForm" style="margin-top:10px;">
+    <input type="email" id="loginEmail" placeholder="Email" required><br>
+    <input type="password" id="loginPass" placeholder="Heslo" required><br>
+    <button id="loginBtn">Přihlásit se</button>
+  </div>
+</div>
+
+<!-- Main Screen -->
+<div id="mainScreen">
+  <div style="display:flex; width:100%; height:100%;">
+    <!-- Levý panel -->
+    <div id="leftPanel">
+      <button id="newChatBtn">Zahájit chat</button>
+      <button id="logoutBtn">Odhlásit se</button>
+      <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Vyhledej uživatele">
+        <div id="searchResults"></div>
+      </div>
+      <div id="chatList"></div>
+    </div>
+    <!-- Pravý panel -->
+    <div id="rightPanel">
+      <div id="chatHeader">Vyber chat</div>
+      <div id="chatMessages"></div>
+      <div id="chatInput">
+        <input type="text" id="msgInput" placeholder="Napiš zprávu...">
+        <button id="sendBtn">Odeslat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
+  authDomain: "chat-a99ee.firebaseapp.com",
+  projectId: "chat-a99ee",
+  storageBucket: "chat-a99ee.appspot.com",
+  messagingSenderId: "558124959244",
+  appId: "1:558124959244:web:e603b56a1fbd9c2d12d029",
+  measurementId: "G-2C6T31PMGS"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let currentUser = null;
+let currentChatId = null;
+let currentChatName = null;
+
+// -------------------- PERSISTENT LOGIN --------------------
+window.onload = ()=>{
+  const savedUser = localStorage.getItem("currentUser");
+  if(savedUser){
+    currentUser = JSON.parse(savedUser);
+    showMainScreen();
+  }
+};
+
+// -------------------- REGISTRACE --------------------
+document.getElementById("regBtn").onclick = () => {
+  const name = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const pass = document.getElementById("regPass").value.trim();
+  if(!name || !email || !pass){ alert("Vyplň všechna pole"); return; }
+
+  db.ref("users").orderByChild("email").equalTo(email).once("value", snap=>{
+    if(snap.exists()){ alert("Email už existuje"); return; }
+    const newUserRef = db.ref("users").push();
+    newUserRef.set({name,email,password:pass});
+    alert("Registrace úspěšná! Přihlaš se.");
+  });
+};
+
+// -------------------- LOGIN --------------------
+document.getElementById("loginBtn").onclick = () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value.trim();
+  if(!email || !pass){ alert("Vyplň email i heslo"); return; }
+
+  db.ref("users").orderByChild("email").equalTo(email).once("value", snap=>{
+    if(!snap.exists()){ alert("Email nenalezen"); return; }
+    let found = false;
+    snap.forEach(child=>{
+      const data = child.val();
+      if(data.password === pass){
+        currentUser = {id:child.key, name:data.name, email:data.email};
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        showMainScreen();
+        found = true;
+      }
+    });
+    if(!found) alert("Špatné heslo");
+  });
+};
+
+// -------------------- ZOBRAZENÍ Hlavní obrazovky --------------------
+function showMainScreen(){
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("mainScreen").style.display = "flex";
+  loadChatList();
+}
+
+// -------------------- CHAT LIST --------------------
+function loadChatList(){
+  const chatListDiv = document.getElementById("chatList");
+  chatListDiv.innerHTML="";
+  db.ref("privateChats").once("value", snap=>{
+    snap.forEach(chatSnap=>{
+      const chatId = chatSnap.key;
+      if(chatId.includes(currentUser.id)){
+        const otherId = chatId.replace(currentUser.id+"_","").replace("_"+currentUser.id,"");
+        db.ref("users/"+otherId).once("value", uSnap=>{
+          const userName = uSnap.val()?.name || "Neznámý";
+          const div = document.createElement("div");
+          div.className="userItem";
+          div.innerText=userName;
+          div.onclick=()=>openChat(otherId,userName);
+          chatListDiv.appendChild(div);
+        });
+      }
+    });
+  });
+}
+
+// -------------------- NOVÝ CHAT --------------------
+document.getElementById("newChatBtn").onclick = ()=>{
+  const searchContainer = document.getElementById("searchContainer");
+  searchContainer.style.display = searchContainer.style.display==="flex"?"none":"flex";
+  document.getElementById("searchInput").value="";
+  document.getElementById("searchResults").innerHTML="";
+};
+
+// -------------------- VYHLEDÁVÁNÍ UŽIVATELE --------------------
+document.getElementById("searchInput").oninput = (e)=>{
+  const val = e.target.value.toLowerCase();
+  const resultsDiv = document.getElementById("searchResults");
+  resultsDiv.innerHTML="";
+  if(!val) return;
+
+  db.ref("users").once("value", snap=>{
+    snap.forEach(uSnap=>{
+      const data = uSnap.val();
+      if(data.name.toLowerCase().includes(val) && uSnap.key!==currentUser.id){
+        const div = document.createElement("div");
+        div.className="userItem";
+        div.innerText = data.name;
+        div.onclick = ()=>{
+          openChat(uSnap.key,data.name);
+          document.getElementById("searchContainer").style.display="none";
+        };
+        resultsDiv.appendChild(div);
+      }
+    });
+  });
+};
+
+// -------------------- OTEVŘENÍ CHATU --------------------
+function openChat(otherId,otherName){
+  const ids = [currentUser.id,otherId].sort();
+  currentChatId = ids.join("_");
+  currentChatName = otherName;
+  document.getElementById("chatHeader").innerText = otherName;
+  document.getElementById("chatMessages").innerHTML="";
+  loadMessages();
+}
+
+// -------------------- ODESÍLÁNÍ ZPRÁV --------------------
+document.getElementById("sendBtn").onclick = ()=>{
+  const text = document.getElementById("msgInput").value.trim();
+  if(!text || !currentChatId) return;
+  db.ref("privateChats/"+currentChatId+"/messages").push({
+    from: currentUser.id,
+    text:text,
+    ts:Date.now()
+  });
+  document.getElementById("msgInput").value="";
+};
+
+// -------------------- NAČÍTÁNÍ ZPRÁV --------------------
+function loadMessages(){
+  const msgDiv = document.getElementById("chatMessages");
+  db.ref("privateChats/"+currentChatId+"/messages").off();
+  db.ref("privateChats/"+currentChatId+"/messages").limitToLast(50)
+    .on("child_added", snap=>{
+      const msg = snap.val();
+      const sender = msg.from===currentUser.id ? currentUser.name : currentChatName;
+      const div = document.createElement("div");
+      div.innerHTML=`<b>${sender}:</b> ${msg.text}`;
+      msgDiv.appendChild(div);
+      msgDiv.scrollTop = msgDiv.scrollHeight;
+    });
+}
+
+// -------------------- ODHLÁŠENÍ --------------------
+document.getElementById("logoutBtn").onclick = ()=>{
+  currentUser = null;
+  localStorage.removeItem("currentUser");
+  document.getElementById("mainScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+};
+</script>
+
+</body>
+</html>
