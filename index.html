@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Login s Google (Firebase)</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    #userInfo { margin-top: 20px; display: none; }
+    #logout { margin-top: 10px; display: none; }
+  </style>
+</head>
+<body>
+  <h2>🔥 Přihlášení do chatu</h2>
+  <button id="loginBtn">Přihlásit se přes Google</button>
+
+  <div id="userInfo">
+    <p id="welcome"></p>
+  </div>
+  <button id="logout">Odhlásit se</button>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
+      authDomain: "chat-a99ee.firebaseapp.com",
+      projectId: "chat-a99ee",
+      storageBucket: "chat-a99ee.appspot.com", // opraveno
+      messagingSenderId: "558124959244",
+      appId: "1:558124959244:web:e603b56a1fbd9c2d12d029",
+      measurementId: "G-2C6T31PMGS"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    // Přihlášení přes redirect
+    document.getElementById("loginBtn").onclick = () => {
+      auth.signInWithRedirect(provider);
+    };
+
+    // Zpracování výsledku redirectu
+    auth.getRedirectResult().then(result => {
+      if (result.user) showUser(result.user);
+    }).catch(err => console.error(err));
+
+    // Posluchač stavu uživatele
+    auth.onAuthStateChanged(user => {
+      if (user) showUser(user);
+      else {
+        document.getElementById("loginBtn").style.display = "inline-block";
+        document.getElementById("logout").style.display = "none";
+        document.getElementById("userInfo").style.display = "none";
+      }
+    });
+
+    // Odhlášení
+    document.getElementById("logout").onclick = () => {
+      auth.signOut();
+    };
+
+    // Zobrazení info o uživateli
+    function showUser(user) {
+      document.getElementById("welcome").innerText = `Vítej, ${user.displayName}`;
+      document.getElementById("userInfo").style.display = "block";
+      document.getElementById("logout").style.display = "inline-block";
+      document.getElementById("loginBtn").style.display = "none";
+    }
+  </script>
+</body>
+</html>
