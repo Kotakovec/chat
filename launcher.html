@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <title>KotakEngine Launcher</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<!-- Favicon / logo v liště prohlížeče -->
+<link rel="icon" type="image/png" href="/image/logo.png">
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
@@ -19,6 +23,14 @@ body, html {
 
 #launcherContent {
   text-align:center;
+}
+
+#logo {
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  object-fit:cover;
+  margin-bottom:20px;
 }
 
 button {
@@ -47,7 +59,8 @@ iframe {
 <body>
 
 <div id="launcherContent">
-  <h1>Vítej v KotakEngine</h1>
+  <img id="logo" src="/image/logo.png" alt="KotakEngine Logo">
+  <h1>KotakEngine</h1>
   <button id="btnInfo">Info</button>
   <button id="btnChat">Chat</button>
   <button id="btnSettings">Nastavení</button>
