@@ -5,9 +5,9 @@
 <title>KotakEngine Chat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="icon" type="image/png" href="images/logo-192.png">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="images/logo.png">
+<link rel="apple-touch-icon" href="images/logo-512.png">
 <meta name="theme-color" content="#0088cc">
 
 <style>
@@ -49,8 +49,8 @@ iframe {
   justify-content:center;
   height:100vh;
   text-align:center;
-  font-size:24px; /* zvětšeno */
-  font-weight:bold; /* tučné */
+  font-size:24px;
+  font-weight:bold;
   color:#333;
   padding:20px;
 }
@@ -61,7 +61,6 @@ iframe {
 <div id="content"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
 
 <script>
@@ -76,10 +75,20 @@ const firebaseConfig = {
   measurementId: "G-2C6T31PMGS"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 const messaging = firebase.messaging();
 
-// Kontrola PWA a iOS
+// Registrace Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => console.log('Service Worker registrován', reg))
+    .catch(err => console.error('Chyba při registraci SW', err));
+}
+
+// Požádej o notifikace
+Notification.requestPermission().then(permission => {
+  if(permission === 'granted') console.log('Notifikace povoleny');
+});
+
 function isInStandaloneMode() {
   return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
 }
@@ -96,7 +105,7 @@ if (isInStandaloneMode() && isIOS()) {
   `;
 
   document.getElementById('btnLauncher').onclick = () => {
-    window.location.href = "index.html"; // zpět na launcher
+    window.location.href = "index.html";
   };
 
   // Detekce zatřesení telefonu
@@ -125,32 +134,6 @@ if (isInStandaloneMode() && isIOS()) {
       lastZ = acc.z;
     }
   });
-
-  // Registrace service worker pro push notifikace
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-    .then(reg => {
-      console.log('Service Worker registrován:', reg);
-
-      // Získání FCM tokenu
-      messaging.getToken({ vapidKey: "BPcLZ8F8CDOkq--z35F1EGRQhlU2JtTVcdMxrelzoBRfrJ97kMG7KJlsY9iauCt-GOWV2ZydSXMbKQXBmNv0-ic" })
-        .then((currentToken) => {
-          if (currentToken) {
-            console.log('FCM token:', currentToken);
-            // uložíme token pod uživatele do Firebase
-            const currentUser = localStorage.getItem("currentUser");
-            if (currentUser) {
-              const userObj = JSON.parse(currentUser);
-              db.ref("users/" + userObj.id + "/fcmToken").set(currentToken);
-            }
-          } else {
-            console.log('Žádný token, povol notifikace');
-          }
-        })
-        .catch(err => console.error('Chyba při získávání tokenu:', err));
-    })
-    .catch(err => console.error('Chyba při registraci SW:', err));
-  }
 
 } else {
   content.innerHTML = `
