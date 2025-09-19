@@ -60,7 +60,16 @@ const btnChat = document.getElementById('btnChat');
 const chatFrame = document.getElementById('chatFrame');
 const launcherContent = document.getElementById('launcherContent');
 
+// Funkce pro kontrolu, jestli je spuštěno jako web app (PWA)
+function isInStandaloneMode() {
+  return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+}
+
 btnChat.onclick = () => {
+  if (!isInStandaloneMode()) {
+    alert("Tento chat funguje pouze jako webová aplikace. Přidej si ho na plochu nebo použij v prohlížeči jako webovou aplikaci.");
+    return; // iframe se vůbec nezobrazí
+  }
   launcherContent.style.display = 'none'; // schová launcher
   chatFrame.style.display = 'block'; // zobrazí chat přes celou obrazovku
 };
