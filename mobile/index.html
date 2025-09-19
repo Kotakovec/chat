@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>KotakEngine Chat - Mobil</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
@@ -13,15 +13,19 @@ body, html {
   background:#f7f7f7;
 }
 
+input, button, select, textarea {
+  font-size: 16px;
+}
+
 #topBar {
   height:50px; background:#0088cc; color:#fff;
   display:flex; align-items:center; justify-content:center;
   font-weight:bold; position:relative;
 }
 
-#topBar .backBtn { position:absolute; left:10px; cursor:pointer; display:none; font-size:20px; }
-
-#profileBtn { position:absolute; left:10px; cursor:pointer; }
+#profileBtn, #backBtn { 
+  position:absolute; left:10px; cursor:pointer; 
+}
 
 #profilePanel {
   display:none; position:absolute; top:50px; left:0; width:200px;
@@ -39,23 +43,26 @@ body, html {
 
 #chatContainer { display:flex; flex-direction:column; width:100%; height:100%; }
 
-#chatSelector, #chatWindow { flex:1; display:flex; flex-direction:column; width:100%; }
-
-#chatSelector { display:flex; flex-direction:column; }
-
-#chatList { flex:1; overflow-y:auto; background:#fff; }
-
-.userItem { padding:10px; border-bottom:1px solid #eee; cursor:pointer; display:flex; align-items:center; position:relative; }
-.userItem img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
-.userItem:hover { background:#eee; }
-
-#chatHeader { padding:10px; border-bottom:1px solid #ccc; background:#f0f0f0; font-weight:bold; display:flex; align-items:center; }
+#chatHeader { padding:10px; border-bottom:1px solid #ccc; background:#f0f0f0; font-weight:bold; display:flex; align-items:center; justify-content:center; position:relative; }
 
 #chatMessages { flex:1; padding:10px; overflow-y:auto; background:#fafafa; }
 
 #chatInput { display:flex; padding:5px; border-top:1px solid #ccc; background:#f0f0f0; }
 #chatInput input { flex:1; padding:5px; border:1px solid #ccc; border-radius:4px; }
 #chatInput button { padding:5px 10px; margin-left:5px; border:none; border-radius:4px; background:#0088cc; color:#fff; cursor:pointer; }
+
+.userItem { padding:10px; border-bottom:1px solid #eee; cursor:pointer; display:flex; align-items:center; position:relative; }
+.userItem img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
+.userItem:hover { background:#eee; }
+
+.contactMenuBtn { margin-left:auto; cursor:pointer; }
+
+.contactMenu { position:absolute; background:#fff; border:1px solid #ccc; padding:5px; z-index:100; right:5px; top:35px; display:none; }
+
+#searchContainer { display:none; flex-direction:column; padding:10px; }
+#searchContainer input { padding:5px; margin-bottom:5px; border:1px solid #ccc; border-radius:4px; }
+
+#chatList { flex:1; overflow-y:auto; width:100%; }
 
 .messageRow {
   display:flex;
@@ -74,16 +81,13 @@ body, html {
 
 .messageRow .messageText { flex:1; word-break: break-word; padding-left:5px; }
 
-#searchContainer { display:none; flex-direction:column; padding:10px; }
-#searchContainer input { padding:5px; margin-bottom:5px; border:1px solid #ccc; border-radius:4px; }
-
 </style>
 </head>
 <body>
 
 <div id="topBar">
-  <div class="backBtn" id="backBtn">←</div>
   <div id="profileBtn">☰</div>
+  <div id="backBtn" style="display:none;">←</div>
   KotakEngine
 </div>
 
@@ -113,22 +117,20 @@ body, html {
 
 <!-- Main Screen -->
 <div id="mainScreen">
-  <div id="chatContainer">
-    <div id="chatSelector">
-      <button id="newChatBtn">Zahájit chat</button>
-      <div id="searchContainer">
-        <input type="text" id="searchInput" placeholder="Vyhledej uživatele">
-        <div id="searchResults"></div>
-      </div>
-      <div id="chatList"></div>
+  <div id="chatSelector" style="display:flex; flex-direction:column; width:100%; height:100%;">
+    <button id="newChatBtn">Zahájit chat</button>
+    <div id="searchContainer">
+      <input type="text" id="searchInput" placeholder="Vyhledej uživatele">
+      <div id="searchResults"></div>
     </div>
-    <div id="chatWindow" style="display:none; flex-direction:column;">
-      <div id="chatHeader"></div>
-      <div id="chatMessages"></div>
-      <div id="chatInput">
-        <input type="text" id="msgInput" placeholder="Napiš zprávu...">
-        <button id="sendBtn">Odeslat</button>
-      </div>
+    <div id="chatList"></div>
+  </div>
+  <div id="chatView" style="display:none; flex-direction:column; height:100%;">
+    <div id="chatHeaderView">Chat</div>
+    <div id="chatMessages"></div>
+    <div id="chatInput">
+      <input type="text" id="msgInput" placeholder="Napiš zprávu...">
+      <button id="sendBtn">Odeslat</button>
     </div>
   </div>
 </div>
@@ -137,7 +139,6 @@ body, html {
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
 <script>
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
   authDomain: "chat-a99ee.firebaseapp.com",
@@ -171,6 +172,7 @@ document.getElementById("regBtn").onclick = () => {
   const username = document.getElementById("regUsername").value.trim();
   const pass = document.getElementById("regPass").value.trim();
   if (!name || !username || !pass) { alert("Vyplň všechna pole"); return; }
+
   db.ref("users").orderByChild("username").equalTo(username).once("value", snap => {
     if (snap.exists()) { alert("Username už existuje"); return; }
     const newUserRef = db.ref("users").push();
@@ -184,6 +186,7 @@ document.getElementById("loginBtn").onclick = () => {
   const username = document.getElementById("loginUsername").value.trim();
   const pass = document.getElementById("loginPass").value.trim();
   if (!username || !pass) { alert("Vyplň username i heslo"); return; }
+
   db.ref("users").orderByChild("username").equalTo(username).once("value", snap => {
     if (!snap.exists()) { alert("Username nenalezen"); return; }
     let found = false;
@@ -200,15 +203,15 @@ document.getElementById("loginBtn").onclick = () => {
   });
 };
 
+// Show main screen
 function showMainScreen() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("mainScreen").style.display = "flex";
   document.getElementById("profileName").innerText = currentUser.name;
   document.getElementById("profileUsername").innerText = currentUser.username;
   document.getElementById("profilePic").src = currentUser.photo || "https://via.placeholder.com/50";
-  loadChatList();
   document.getElementById("profileBtn").style.display = "block";
-  document.getElementById("backBtn").style.display = "none";
+  loadChatList();
 }
 
 // Logout
@@ -225,6 +228,15 @@ const profilePanel = document.getElementById("profilePanel");
 profileBtn.onclick = (e) => { e.stopPropagation(); profilePanel.style.display = profilePanel.style.display === "block" ? "none" : "block"; }
 document.body.addEventListener("click", () => { profilePanel.style.display = "none"; });
 profilePanel.addEventListener("click", e => { e.stopPropagation(); });
+
+// Back button
+const backBtn = document.getElementById("backBtn");
+backBtn.onclick = () => {
+  document.getElementById("chatView").style.display = "none";
+  document.getElementById("chatSelector").style.display = "flex";
+  backBtn.style.display = "none";
+  profileBtn.style.display = "block";
+};
 
 // Upload profile pic
 document.getElementById("uploadPic").onchange = (e) => {
@@ -255,13 +267,20 @@ function loadChatList() {
         const otherId = chatId.replace(currentUser.id + "_", "").replace("_" + currentUser.id, "");
         db.ref("users/" + otherId).once("value", uSnap => {
           const userName = uSnap.val()?.name || "Neznámý";
-          const photo = uSnap.val()?.photo || "https://via.placeholder.com/30";
-          const div = document.createElement("div");
-          div.className = "userItem";
-          div.id = "chatUser_" + otherId;
-          div.innerHTML = `<img src="${photo}"><span>${userName}</span>`;
-          div.onclick = () => openChat(otherId, userName);
-          chatListDiv.appendChild(div);
+          const photo = uSnap.val()?.photo || "https://via.placeholder.com/40";
+          if (!document.getElementById("chatUser_" + otherId)) {
+            const div = document.createElement("div");
+            div.className = "userItem";
+            div.id = "chatUser_" + otherId;
+            const img = document.createElement("img");
+            img.src = photo;
+            const nameSpan = document.createElement("span");
+            nameSpan.innerText = userName;
+            div.appendChild(img);
+            div.appendChild(nameSpan);
+            div.onclick = () => openChat(otherId, userName);
+            chatListDiv.appendChild(div);
+          }
         });
       }
     });
@@ -313,44 +332,44 @@ function sendMessage() {
   document.getElementById("msgInput").value = "";
 }
 
-// Open chat
+// Open chat with profile pics only
 function openChat(otherId, otherName) {
   if (otherId === currentUser.id) { alert("Nemůžeš si psát sám sobě!"); return; }
+
   db.ref("users/" + otherId).once("value", uSnap => {
     const otherUserPhoto = uSnap.val()?.photo || "https://via.placeholder.com/30";
+
     const ids = [currentUser.id, otherId].sort();
     currentChatId = ids.join("_");
-    document.getElementById("chatHeader").innerText = otherName;
-    document.getElementById("chatMessages").innerHTML = "";
+
     document.getElementById("chatSelector").style.display = "none";
-    document.getElementById("chatWindow").style.display = "flex";
-    document.getElementById("profileBtn").style.display = "none";
-    document.getElementById("backBtn").style.display = "block";
+    document.getElementById("chatView").style.display = "flex";
+    document.getElementById("chatHeaderView").innerText = otherName;
+
+    backBtn.style.display = "block";
+    profileBtn.style.display = "none";
+
+    document.getElementById("chatMessages").innerHTML = "";
 
     if (messagesListener) messagesListener.off();
+
     messagesListener = db.ref("privateChats/" + currentChatId + "/messages");
     messagesListener.on("child_added", snap => {
       const msg = snap.val();
       const isMe = msg.from === currentUser.id;
       const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : otherUserPhoto;
+
       const div = document.createElement("div");
       div.className = "messageRow";
       div.innerHTML = `<div class="senderName"><img src="${photo}"></div>
                        <div class="messageText">${msg.text}</div>`;
+
       const msgDiv = document.getElementById("chatMessages");
       msgDiv.appendChild(div);
       msgDiv.scrollTop = msgDiv.scrollHeight;
     });
   });
 }
-
-// Back button
-document.getElementById("backBtn").onclick = () => {
-  document.getElementById("chatWindow").style.display = "none";
-  document.getElementById("chatSelector").style.display = "flex";
-  document.getElementById("profileBtn").style.display = "block";
-  document.getElementById("backBtn").style.display = "none";
-};
 </script>
 
 </body>
