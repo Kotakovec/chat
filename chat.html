@@ -60,7 +60,25 @@ iframe {
 
 <div id="content"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
+
 <script>
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
+  authDomain: "chat-a99ee.firebaseapp.com",
+  projectId: "chat-a99ee",
+  storageBucket: "chat-a99ee.appspot.com",
+  messagingSenderId: "558124959244",
+  appId: "1:558124959244:web:e603b56a1fbd9c2d12d029",
+  measurementId: "G-2C6T31PMGS"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const messaging = firebase.messaging();
+
 // Kontrola PWA a iOS
 function isInStandaloneMode() {
   return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
@@ -107,6 +125,33 @@ if (isInStandaloneMode() && isIOS()) {
       lastZ = acc.z;
     }
   });
+
+  // Registrace service worker pro push notifikace
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+    .then(reg => {
+      console.log('Service Worker registrován:', reg);
+
+      // Získání FCM tokenu
+      messaging.getToken({ vapidKey: "BPcLZ8F8CDOkq--z35F1EGRQhlU2JtTVcdMxrelzoBRfrJ97kMG7KJlsY9iauCt-GOWV2ZydSXMbKQXBmNv0-ic" })
+        .then((currentToken) => {
+          if (currentToken) {
+            console.log('FCM token:', currentToken);
+            // uložíme token pod uživatele do Firebase
+            const currentUser = localStorage.getItem("currentUser");
+            if (currentUser) {
+              const userObj = JSON.parse(currentUser);
+              db.ref("users/" + userObj.id + "/fcmToken").set(currentToken);
+            }
+          } else {
+            console.log('Žádný token, povol notifikace');
+          }
+        })
+        .catch(err => console.error('Chyba při získávání tokenu:', err));
+    })
+    .catch(err => console.error('Chyba při registraci SW:', err));
+  }
+
 } else {
   content.innerHTML = `
     <div id="message">
