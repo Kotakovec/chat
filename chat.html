@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>KotakEngine Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="images/logo.png">
+<meta name="theme-color" content="#0088cc">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body, html {
+  margin:0; padding:0; height:100%;
+  font-family: 'Roboto', sans-serif;
+  background:#f7f7f7;
+}
+
+iframe {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  border:none;
+  z-index:1000;
+}
+
+#btnLauncher {
+  position:fixed;
+  top:10px;
+  right:10px;
+  padding:8px 14px;
+  font-size:14px;
+  background:#ff4444;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  z-index:1100;
+}
+
+#message {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  text-align:center;
+  font-size:24px; /* zvětšeno */
+  font-weight:bold; /* tučné */
+  color:#333;
+  padding:20px;
+}
+</style>
+</head>
+<body>
+
+<div id="content"></div>
+
+<script>
+// Kontrola PWA a iOS
+function isInStandaloneMode() {
+  return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+}
+function isIOS() {
+  return /iPhone|iPad|iPod/.test(navigator.userAgent);
+}
+
+const content = document.getElementById('content');
+
+if (isInStandaloneMode() && isIOS()) {
+  content.innerHTML = `
+    <iframe src="https://kotakovec.github.io/chat/mobile/"></iframe>
+    <button id="btnLauncher">Launcher</button>
+  `;
+
+  document.getElementById('btnLauncher').onclick = () => {
+    window.location.href = "index.html"; // zpět na launcher
+  };
+
+  // Detekce zatřesení telefonu
+  let lastX = null, lastY = null, lastZ = null;
+  let lastTime = 0;
+
+  window.addEventListener("devicemotion", function(event) {
+    let acc = event.accelerationIncludingGravity;
+    if (!acc) return;
+
+    let curTime = new Date().getTime();
+    if ((curTime - lastTime) > 100) {
+      let diffTime = curTime - lastTime;
+      lastTime = curTime;
+
+      if (lastX !== null) {
+        let speed = Math.abs(acc.x - lastX + acc.y - lastY + acc.z - lastZ) / diffTime * 10000;
+        if (speed > 1500) {
+          window.location.href = "index.html";
+          if (navigator.vibrate) navigator.vibrate(200);
+        }
+      }
+
+      lastX = acc.x;
+      lastY = acc.y;
+      lastZ = acc.z;
+    }
+  });
+} else {
+  content.innerHTML = `
+    <div id="message">
+      Tento chat je dostupný pouze na iOS a jen pokud je spuštěn jako webová aplikace z plochy.
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
