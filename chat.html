@@ -7,11 +7,8 @@
 
 <!-- Ikony pro PWA -->
 <link rel="icon" type="image/png" href="https://kotakovec.github.io/chat/images/logo-192.png">
-<link rel="manifest" href="https://kotakovec.github.io/chat/manifest.json">
 <link rel="apple-touch-icon" href="https://kotakovec.github.io/chat/images/logo-512.png">
 <meta name="theme-color" content="#0088cc">
-
-<!-- Apple specific meta tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kotak Engine">
@@ -85,56 +82,34 @@ iframe {
   font-weight: bold;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
+
+.hidden {
+  display: none;
+}
 </style>
 </head>
 <body>
 
 <div id="content"></div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
-
 <script>
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
-  authDomain: "chat-a99ee.firebaseapp.com",
-  projectId: "chat-a99ee",
-  storageBucket: "chat-a99ee.appspot.com",
-  messagingSenderId: "558124959244",
-  appId: "1:558124959244:web:e603b56a1fbd9c2d12d029",
-  measurementId: "G-2C6T31PMGS"
-};
-firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
-
-// Registrace Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('https://kotakovec.github.io/chat/sw.js')
-    .then(reg => console.log('Service Worker registrován', reg))
-    .catch(err => console.error('Chyba při registraci SW', err));
-}
-
-// Požádej o notifikace
-Notification.requestPermission().then(permission => {
-  if(permission === 'granted') console.log('Notifikace povoleny');
-});
-
-// Kontrola PWA a iOS
+// Kontrola PWA režimu
 function isInStandaloneMode() {
-  return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  return (window.matchMedia('(display-mode: standalone)').matches) || 
+         (window.navigator.standalone === true);
 }
 
 const content = document.getElementById('content');
 
 if (isInStandaloneMode()) {
+  // Jsme v PWA režimu - zobrazíme chat
   content.innerHTML = `
     <iframe src="https://kotakovec.github.io/chat/chat/"></iframe>
     <button id="btnLauncher">Launcher</button>
   `;
 
   document.getElementById('btnLauncher').onclick = () => {
-    window.location.href = "index.html";
+    window.location.href = "https://kotakovec.github.io/chat/";
   };
 
   // Detekce zatřesení telefonu
@@ -153,7 +128,7 @@ if (isInStandaloneMode()) {
       if (lastX !== null) {
         let speed = Math.abs(acc.x - lastX + acc.y - lastY + acc.z - lastZ) / diffTime * 10000;
         if (speed > 1500) {
-          window.location.href = "index.html";
+          window.location.href = "https://kotakovec.github.io/chat/";
           if (navigator.vibrate) navigator.vibrate(200);
         }
       }
@@ -165,16 +140,19 @@ if (isInStandaloneMode()) {
   });
 
 } else {
+  // Nejsme v PWA režimu - zobrazíme instrukce
   content.innerHTML = `
     <div id="message">
       <div class="logo">Kotak Engine</div>
-      Vítejte v KotakEngine Chat!<br>
+      Tento chat je dostupný pouze jako webová aplikace!
       <div class="install-info">
-        Pro plný zážitek z aplikace si ji přidejte na plochu vašeho zařízení.
+        Pro použití chatu si jej přidejte na plochu vašeho zařízení:
         <br><br>
         Na Androidu: v menu prohlížeče zvolte "Přidat na plochu".
         <br><br>
         Na iOS: v Safari sdílecím menu zvolte "Přidat na plochu".
+        <br><br>
+        Po přidání na plochu aplikaci spusťte z ikony.
       </div>
     </div>
   `;
