@@ -8,11 +8,15 @@
     <!-- PWA Metadata -->
     <meta name="theme-color" content="#0088cc">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
-    <!-- Ikony pro PWA - základní favicon -->
+    <!-- Ikony pro PWA -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230088cc%22/><text x=%2250%22 y=%2260%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22>KE</text></svg>">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
@@ -31,12 +35,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         
         .container {
             text-align: center;
             max-width: 400px;
             padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
         
         h1 {
@@ -49,6 +57,17 @@
             font-size: 18px;
             color: #555;
             line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        .instruction {
+            font-size: 16px;
+            color: #666;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #0088cc;
+            margin-top: 20px;
         }
         
         .error-message {
@@ -81,17 +100,17 @@
     <div class="container">
         <h1>Kotak Engine</h1>
         <div class="message">Tento chat je dostupný pouze jako webová aplikace na iOS nebo Android zařízeních.</div>
+        
+        <div class="instruction">
+            Pro použití aplikace si ji přidejte na plochu pomocí menu prohlížeče.
+        </div>
+        
         <div class="error-message" id="errorMessage">
             Tato aplikace je dostupná pouze na iOS a Android zařízeních.
         </div>
     </div>
 
     <script>
-        // Funkce pro detekci mobilního zařízení
-        function isMobileDevice() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        }
-        
         // Funkce pro detekci iOS zařízení
         function isIOS() {
             return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -115,18 +134,35 @@
                 if (isInStandaloneMode()) {
                     window.location.href = 'https://kotakovec.github.io/chat/chat/';
                 }
-                // Pokud není v standalone režimu, zobrazíme zprávu
             } else {
                 // Pokud není iOS ani Android, zobrazíme chybovou zprávu
                 document.getElementById('errorMessage').style.display = 'block';
-                document.querySelector('.message').style.display = 'none';
+                document.querySelector('.instruction').style.display = 'none';
             }
+        }
+        
+        // Registrace Service Worker pro PWA funkce
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registrován: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registrace selhala: ', error);
+                    });
+            });
+        }
+        
+        // Požádat o povolení notifikací (pro PWA)
+        if ('Notification' in window) {
+            Notification.requestPermission();
         }
         
         // Spuštění kontroly zařízení
         checkDevice();
         
-        // Dynamické vytvoření ikon pro Apple
+        // Vytvoření ikon pro Apple
         function createAppleIcons() {
             const iconSizes = [180, 167, 152];
             iconSizes.forEach(size => {
