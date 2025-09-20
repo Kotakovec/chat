@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Kotak Engine</title>
+    <title>Kotak Engine Chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- PWA Metadata -->
@@ -10,12 +10,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
-    
-    <!-- Ikony pro PWA -->
-    <link rel="icon" href="images/logo.png">
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
@@ -29,157 +23,281 @@
         body, html {
             height: 100%;
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #f7f9fc 0%, #e8ecf2 100%);
-            color: #333;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            background: #0088cc;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
-            text-align: center;
-            max-width: 400px;
-            padding: 30px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
         
         h1 {
-            font-size: 32px;
-            margin-bottom: 15px;
-            color: #0088cc;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
         }
         
-        .message {
-            font-size: 18px;
-            color: #555;
-            line-height: 1.5;
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-icon {
+            font-size: 16px;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .iframe-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: white;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 5;
+            transition: opacity 0.5s;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #0088cc;
+            animation: spin 1s ease-in-out infinite;
             margin-bottom: 20px;
         }
         
-        .instruction {
-            font-size: 16px;
-            color: #666;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #0088cc;
-            margin-top: 20px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
-        .error-message {
-            display: none;
-            color: #d32f2f;
-            font-size: 16px;
-            margin-top: 20px;
-            padding: 15px;
-            background: #ffebee;
+        .loading-text {
+            font-size: 18px;
+            color: white;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
             border-radius: 10px;
-            border-left: 4px solid #d32f2f;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        .footer {
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         @media (max-width: 600px) {
-            .container {
-                padding: 20px;
+            .header {
+                padding: 12px 15px;
             }
             
             h1 {
-                font-size: 28px;
+                font-size: 18px;
             }
             
-            .message {
-                font-size: 16px;
+            .btn {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+            
+            .logo-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Kotak Engine</h1>
-        <div class="message">Tento chat je dostupný pouze jako webová aplikace na iOS nebo Android zařízeních.</div>
-        
-        <div class="instruction">
-            Pro použití aplikace si ji přidejte na plochu pomocí menu prohlížeče.
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">💬</div>
+            <h1>Kotak Engine Chat</h1>
         </div>
-        
-        <div class="error-message" id="errorMessage">
-            Tato aplikace je dostupná pouze na iOS a Android zařízeních.
+        <div class="controls">
+            <button class="btn" id="reloadBtn">
+                <span class="btn-icon">↻</span> Obnovit
+            </button>
+            <button class="btn" id="fullscreenBtn">
+                <span class="btn-icon">⛶</span> Celá obrazovka
+            </button>
         </div>
     </div>
+    
+    <div class="container">
+        <div class="iframe-container">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Načítám chat...</div>
+            </div>
+            <iframe id="chatFrame" src="https://kotakovec.github.io/chat/chat/" title="Kotak Engine Chat" allow="camera; microphone"></iframe>
+        </div>
+    </div>
+    
+    <div class="footer">
+        Kotak Engine Chat © 2023 | Načteno přes iframe
+    </div>
+    
+    <div class="notification" id="notification"></div>
 
     <script>
-        // Funkce pro detekci iOS zařízení
-        function isIOS() {
-            return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        }
-        
-        // Funkce pro detekci Android zařízení
-        function isAndroid() {
-            return /Android/i.test(navigator.userAgent);
-        }
-        
-        // Kontrola, zda je aplikace v standalone režimu
-        function isInStandaloneMode() {
-            return (window.matchMedia('(display-mode: standalone)').matches) || 
-                   (window.navigator.standalone === true);
-        }
-        
-        // Hlavní funkce pro kontrolu zařízení
-        function checkDevice() {
-            if (isIOS() || isAndroid()) {
-                // Pokud je aplikace v standalone režimu, přesměrujeme na chat
-                if (isInStandaloneMode()) {
-                    window.location.href = 'https://kotakovec.github.io/chat/chat/index.html';
-                }
-            } else {
-                // Pokud není iOS ani Android, zobrazíme chybovou zprávu
-                document.getElementById('errorMessage').style.display = 'block';
-                document.querySelector('.instruction').style.display = 'none';
-            }
-        }
-        
-        // Vytvoření ikon pro Apple
-        function createAppleIcons() {
-            // Vytvoření základní apple-touch-icon
-            const icon = document.createElement('link');
-            icon.rel = 'apple-touch-icon';
-            icon.href = 'images/logo.png';
-            document.head.appendChild(icon);
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatFrame = document.getElementById('chatFrame');
+            const loading = document.getElementById('loading');
+            const reloadBtn = document.getElementById('reloadBtn');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const notification = document.getElementById('notification');
             
-            // Vytvoření ikon pro specifické rozměry (iOS očekává různé velikosti)
-            const iconSizes = [180, 167, 152, 120, 76, 60];
-            iconSizes.forEach(size => {
-                const link = document.createElement('link');
-                link.rel = 'apple-touch-icon';
-                link.sizes = `${size}x${size}`;
-                link.href = 'images/logo.png'; // Stejný obrázek pro všechny velikosti
-                document.head.appendChild(link);
+            // Skrýt loading když je iframe načtený
+            chatFrame.addEventListener('load', function() {
+                loading.style.opacity = '0';
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    showNotification('Chat úspěšně načten');
+                }, 500);
             });
-        }
-        
-        // Spuštění kontroly zařízení
-        checkDevice();
-        
-        // Vytvoření ikon po načtení stránky
-        window.addEventListener('load', function() {
-            createAppleIcons();
             
-            // Registrace Service Worker pro PWA funkce
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registrován: ', registration.scope);
-                    })
-                    .catch(function(error) {
-                        console.log('ServiceWorker registrace selhala: ', error);
-                    });
+            // Zobrazit loading při refreshu
+            reloadBtn.addEventListener('click', function() {
+                loading.style.display = 'flex';
+                setTimeout(() => {
+                    loading.style.opacity = '1';
+                    chatFrame.src = chatFrame.src;
+                    showNotification('Obnovuji chat...');
+                }, 10);
+            });
+            
+            // Celá obrazovka
+            fullscreenBtn.addEventListener('click', function() {
+                const container = document.querySelector('.container');
+                
+                if (!document.fullscreenElement) {
+                    if (container.requestFullscreen) {
+                        container.requestFullscreen();
+                    } else if (container.webkitRequestFullscreen) {
+                        container.webkitRequestFullscreen();
+                    } else if (container.msRequestFullscreen) {
+                        container.msRequestFullscreen();
+                    }
+                    showNotification('Režim celé obrazovky');
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                    showNotification('Ukončení celé obrazovky');
+                }
+            });
+            
+            // Funkce pro zobrazení notifikace
+            function showNotification(text) {
+                notification.textContent = text;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
             }
             
-            // Požádat o povolení notifikací (pro PWA)
-            if ('Notification' in window) {
-                Notification.requestPermission();
+            // Detekce zařízení
+            function isMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+            
+            if (isMobile()) {
+                showNotification('Mobilní zařízení detekováno');
             }
         });
     </script>
