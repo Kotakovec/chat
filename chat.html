@@ -5,10 +5,16 @@
 <title>KotakEngine Chat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<link rel="icon" type="image/png" href="images/logo-192.png">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="images/logo-512.png">
+<!-- Ikony pro PWA -->
+<link rel="icon" type="image/png" href="https://kotakovec.github.io/chat/images/logo-192.png">
+<link rel="manifest" href="https://kotakovec.github.io/chat/manifest.json">
+<link rel="apple-touch-icon" href="https://kotakovec.github.io/chat/images/logo-512.png">
 <meta name="theme-color" content="#0088cc">
+
+<!-- Apple specific meta tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kotak Engine">
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
@@ -41,10 +47,12 @@ iframe {
   border-radius:6px;
   cursor:pointer;
   z-index:1100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 #message {
   display:flex;
+  flex-direction: column;
   align-items:center;
   justify-content:center;
   height:100vh;
@@ -53,6 +61,29 @@ iframe {
   font-weight:bold;
   color:#333;
   padding:20px;
+}
+
+.install-info {
+  margin-top: 20px;
+  font-size: 16px;
+  max-width: 400px;
+  line-height: 1.5;
+  color: #555;
+}
+
+.logo {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #0088cc, #0055aa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 </style>
 </head>
@@ -79,7 +110,7 @@ const messaging = firebase.messaging();
 
 // Registrace Service Worker
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
+  navigator.serviceWorker.register('https://kotakovec.github.io/chat/sw.js')
     .then(reg => console.log('Service Worker registrován', reg))
     .catch(err => console.error('Chyba při registraci SW', err));
 }
@@ -89,7 +120,7 @@ Notification.requestPermission().then(permission => {
   if(permission === 'granted') console.log('Notifikace povoleny');
 });
 
-// Kontrola PWA
+// Kontrola PWA a iOS
 function isInStandaloneMode() {
   return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
 }
@@ -136,7 +167,15 @@ if (isInStandaloneMode()) {
 } else {
   content.innerHTML = `
     <div id="message">
-      Tento chat je dostupný pouze pokud je spuštěn jako webová aplikace z plochy.
+      <div class="logo">Kotak Engine</div>
+      Vítejte v KotakEngine Chat!<br>
+      <div class="install-info">
+        Pro plný zážitek z aplikace si ji přidejte na plochu vašeho zařízení.
+        <br><br>
+        Na Androidu: v menu prohlížeče zvolte "Přidat na plochu".
+        <br><br>
+        Na iOS: v Safari sdílecím menu zvolte "Přidat na plochu".
+      </div>
     </div>
   `;
 }
