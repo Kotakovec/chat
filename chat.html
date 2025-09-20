@@ -12,10 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
     <!-- Ikony pro PWA - základní favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="https://kotakovec.github.io/chat/manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
@@ -34,6 +31,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
         
         .container {
@@ -42,38 +40,44 @@
             padding: 30px;
         }
         
-        .logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #0088cc, #0055aa);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            box-shadow: 0 6px 15px rgba(0, 136, 204, 0.3);
-            margin: 0 auto 20px;
-            position: relative;
-        }
-        
-        .logo::before {
-            content: "KE";
-            font-size: 40px;
-            font-weight: bold;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-        }
-        
         h1 {
-            font-size: 28px;
+            font-size: 32px;
             margin-bottom: 15px;
             color: #0088cc;
         }
         
         .message {
-            font-size: 30px;
-            color: #000000;
+            font-size: 18px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        /* Styly pro iFrame */
+        #chatFrame {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1000;
+            display: none;
+        }
+        
+        #btnLauncher {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            padding: 10px 15px;
+            font-size: 14px;
+            background: #ff4444;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1100;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
         @media (max-width: 600px) {
@@ -82,28 +86,33 @@
             }
             
             h1 {
-                font-size: 24px;
+                font-size: 28px;
             }
             
             .message {
                 font-size: 16px;
             }
             
-            .logo {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .logo::before {
-                font-size: 32px;
+            #btnLauncher {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="mainContainer">
+        <h1>Kotak Engine</h1>
         <div class="message">Tento chat je dostupný pouze jako webová aplikace.</div>
     </div>
+    
+    <!-- iFrame pro chat -->
+    <iframe id="chatFrame" src="https://kotakovec.github.io/chat/chat/"></iframe>
+    
+    <!-- Tlačítko pro návrat -->
+    <button id="btnLauncher">Návrat</button>
 
     <script>
         // Kontrola, zda je aplikace v standalone režimu
@@ -112,12 +121,50 @@
                    (window.navigator.standalone === true);
         }
         
-        // Pokud je aplikace v standalone režimu, přesměrujeme na chat
+        // Pokud je aplikace v standalone režimu, zobrazíme iframe
         if (isInStandaloneMode()) {
-            window.location.href = 'https://kotakovec.github.io/chat/chat/';
+            document.getElementById('mainContainer').style.display = 'none';
+            document.getElementById('chatFrame').style.display = 'block';
+            document.getElementById('btnLauncher').style.display = 'block';
+            
+            // Detekce zatřesení telefonu pro návrat
+            let lastX = null, lastY = null, lastZ = null;
+            let lastTime = 0;
+            
+            window.addEventListener("devicemotion", function(event) {
+                let acc = event.accelerationIncludingGravity;
+                if (!acc) return;
+                
+                let curTime = new Date().getTime();
+                if ((curTime - lastTime) > 100) {
+                    let diffTime = curTime - lastTime;
+                    lastTime = curTime;
+                    
+                    if (lastX !== null) {
+                        let speed = Math.abs(acc.x - lastX + acc.y - lastY + acc.z - lastZ) / diffTime * 10000;
+                        if (speed > 1500) {
+                            document.getElementById('mainContainer').style.display = 'flex';
+                            document.getElementById('chatFrame').style.display = 'none';
+                            document.getElementById('btnLauncher').style.display = 'none';
+                            if (navigator.vibrate) navigator.vibrate(200);
+                        }
+                    }
+                    
+                    lastX = acc.x;
+                    lastY = acc.y;
+                    lastZ = acc.z;
+                }
+            });
         }
         
-        // Dynamické vytvoření ikon pro Apple, pokud nejsou k dispozici
+        // Tlačítko pro návrat
+        document.getElementById('btnLauncher').onclick = function() {
+            document.getElementById('mainContainer').style.display = 'flex';
+            document.getElementById('chatFrame').style.display = 'none';
+            this.style.display = 'none';
+        };
+        
+        // Dynamické vytvoření ikon pro Apple
         function createAppleIcons() {
             const iconSizes = [180, 167, 152];
             iconSizes.forEach(size => {
