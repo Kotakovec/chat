@@ -1,145 +1,157 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <title>KotakEngine Launcher</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>KotakEngine Launcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="images/logo.png">
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="images/logo.png">
 
-  <!-- Google font -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<!-- Google font -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-  <style>
-    /* Globální nastavení */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<style>
+/* Globální nastavení */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    body {
-      font-family: 'Roboto', sans-serif;
-      min-height: 100dvh; /* místo 100vh */
-      background: radial-gradient(circle at center, #a300cc 0%, #54007a 50%, #000000 100%);
-      color: #fff;
-    }
-    .container {
-      min-height: 100dvh; /* místo 100vh */
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-    }
+html {
+  height: 100dvh;
+  background: radial-gradient(circle at center, #a300cc 0%, #54007a 50%, #000000 100%);
+}
 
-    .logo {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 20px;
-      border: 3px solid rgba(255,255,255,0.3);
-    }
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+  color: #fff;
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 20px;
-    }
+  /* safe-area pro notch a spodní lištu iPhonu */
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+}
 
-    .button-container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 25px;
-      width: 250px;
-      max-width: 100%;
-    }
+.container {
+  max-width: 500px;
+  width: 90%;
+  padding: 20px;
+}
 
-    .button-container a {
-      text-decoration: none;
-    }
+.logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+}
 
-    button {
-      width: 100%;
-      padding: 14px 20px;
-      font-size: 16px;
-      font-weight: bold;
-      border: none;
-      border-radius: 25px;
-      background: #000;
-      color: #fff;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
 
-    button:hover {
-      background: #006699;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+  width: 250px;
+  max-width: 100%;
+}
 
-    .description {
-      font-size: 16px;
-      line-height: 1.6;
-      color: #f0f0f0;
-      max-width: 400px;
-    }
+.button-container a {
+  text-decoration: none;
+}
 
-    .description strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 17px;
-      color: #fff;
-    }
+button {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 25px;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
-    /* 📱 Responzivní úpravy */
-    @media (max-width: 600px) {
-      .logo {
-        width: 90px;
-        height: 90px;
-      }
+button:hover {
+  background: #006699;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
 
-      h1 {
-        font-size: 1.6rem;
-      }
+.description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #f0f0f0;
+  max-width: 400px;
+}
 
-      button {
-        font-size: 14px;
-        padding: 12px;
-      }
+.description strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 17px;
+  color: #fff;
+}
 
-      .description {
-        font-size: 14px;
-        max-width: 90%;
-      }
-    }
-  </style>
+/* 📱 Responzivní úpravy */
+@media (max-width: 600px) {
+  .logo {
+    width: 90px;
+    height: 90px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .description {
+    font-size: 14px;
+    max-width: 90%;
+  }
+}
+</style>
 </head>
 <body>
-  <div class="container">
-    <img src="images/logo.png" alt="KotakEngine Logo" class="logo">
-    <h1>KotakEngine</h1>
+<div class="container">
+  <img src="images/logo.png" alt="KotakEngine Logo" class="logo">
+  <h1>KotakEngine</h1>
 
-    <div class="button-container">
-      <a href="info.html">
-        <button>Info</button>
-      </a>
-      <a href="https://kotakovec.github.io/chat/chat.html" target="_blank">
-        <button>Chat</button>
-      </a>
-      <a href="settings.html">
-        <button>Nastavení</button>
-      </a>
-    </div>
-
-    <div class="description">
-      <strong>Soukromí na prvním místě. Mluv beze strachu.</strong>
-      Tento chat je navržen tak, aby byla vaše komunikace vždy chráněná a dostupná jen těm, komu opravdu věříte.  
-      Žádné sledování, žádné reklamy, jen rychlá a bezpečná komunikace.
-    </div>
+  <div class="button-container">
+    <a href="info.html">
+      <button>Info</button>
+    </a>
+    <a href="https://kotakovec.github.io/chat/chat.html" target="_blank">
+      <button>Chat</button>
+    </a>
+    <a href="settings.html">
+      <button>Nastavení</button>
+    </a>
   </div>
+
+  <div class="description">
+    <strong>Soukromí na prvním místě. Mluv beze strachu.</strong>
+    Tento chat je navržen tak, aby byla vaše komunikace vždy chráněná a dostupná jen těm, komu opravdu věříte.  
+    Žádné sledování, žádné reklamy, jen rychlá a bezpečná komunikace.
+  </div>
+</div>
 </body>
 </html>
