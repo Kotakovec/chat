@@ -22,17 +22,17 @@
     body {
       font-family: 'Roboto', sans-serif;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
       background: radial-gradient(circle at center, #a300cc 0%, #54007a 50%, #000000 100%);
       color: #fff;
     }
 
     .container {
-      max-width: 500px;
-      width: 90%;
+      min-height: 100vh;          /* zabírá celou výšku okna */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;    /* vystředí vertikálně */
+      align-items: center;        /* vystředí horizontálně */
+      text-align: center;
       padding: 20px;
     }
 
@@ -55,6 +55,8 @@
       flex-direction: column;
       gap: 15px;
       margin-bottom: 25px;
+      width: 250px;
+      max-width: 100%;
     }
 
     .button-container a {
@@ -84,6 +86,7 @@
       font-size: 16px;
       line-height: 1.6;
       color: #f0f0f0;
+      max-width: 400px;
     }
 
     .description strong {
@@ -111,6 +114,7 @@
 
       .description {
         font-size: 14px;
+        max-width: 90%;
       }
     }
   </style>
