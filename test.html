@@ -11,8 +11,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
     <!-- Ikony pro PWA -->
-    <link rel="icon" href="images/logo.png">
+    <link rel="icon" href="https://via.placeholder.com/64/0088cc/ffffff?text=KE" type="image/png">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/180/0088cc/ffffff?text=KE">
     
     <style>
         /* Styly pro zabezpečovací obrazovku */
@@ -359,7 +363,7 @@
             // Vytvoření základní apple-touch-icon
             const icon = document.createElement('link');
             icon.rel = 'apple-touch-icon';
-            icon.href = 'images/logo.png';
+            icon.href = 'https://via.placeholder.com/180/0088cc/ffffff?text=KE';
             document.head.appendChild(icon);
             
             // Vytvoření ikon pro specifické rozměry (iOS očekává různé velikosti)
@@ -368,7 +372,7 @@
                 const link = document.createElement('link');
                 link.rel = 'apple-touch-icon';
                 link.sizes = `${size}x${size}`;
-                link.href = 'images/logo.png'; // Stejný obrázek pro všechny velikosti
+                link.href = 'https://via.placeholder.com/' + size + '/0088cc/ffffff?text=KE';
                 document.head.appendChild(link);
             });
         }
@@ -586,7 +590,7 @@
                 text: text,
                 ts: Date.now()
               });
-              document.getElementById("msgInput").value = "";
+              document.getElementById('msgInput').value = "";
             }
 
             // Open chat
