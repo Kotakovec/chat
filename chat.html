@@ -11,18 +11,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
-    <!-- Ikony pro PWA - přidány všechny potřebné velikosti -->
-    <link rel="icon" type="image/png" href="images/logo.png">
-    <link rel="apple-touch-icon" href="images/logo.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="images/logo.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="images/logo.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="images/logo.png">
+    <!-- Ikony pro PWA -->
+    <link rel="icon" type="image/png" href="https://kotakovec.github.io/chat/images/logo.png">
+    <link rel="apple-touch-icon" href="https://kotakovec.github.io/chat/images/logo.png">
     
-    <!-- Manifest s absolutní cestou -->
+    <!-- Manifest -->
     <link rel="manifest" href="https://kotakovec.github.io/chat/manifest.json">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
         
         * {
             box-sizing: border-box;
@@ -36,6 +33,7 @@
             background: linear-gradient(135deg, #f7f9fc 0%, #e8ecf2 100%);
             color: #333;
             line-height: 1.6;
+            overflow-x: hidden;
         }
         
         .container {
@@ -67,12 +65,16 @@
             box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
             margin: 0 auto 20px;
             overflow: hidden;
+            position: relative;
         }
         
-        .logo-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            padding: 10px;
         }
         
         h1 {
@@ -205,6 +207,12 @@
             font-size: 14px;
         }
         
+        .app-info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -242,6 +250,10 @@
                 padding: 10px 15px;
                 font-size: 14px;
             }
+            
+            .logo-text {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -249,8 +261,7 @@
     <div class="container">
         <div class="logo-container">
             <div class="logo">
-                <img src="images/logo.png" alt="Kotak Engine Logo" class="logo-img" onerror="this.style.display='none';">
-                <span style="display:none;">KE</span>
+                <div class="logo-text">Kotak<br>Engine</div>
             </div>
             <h1>KotakEngine Chat</h1>
             <p class="subtitle">Komunikace snadno a rychle</p>
@@ -303,6 +314,10 @@
             </div>
             
             <p class="note">Aplikace je dostupná pouze jako webová aplikace přidaná na plochu. Po přidání ikony na plochu ji najdete mezi ostatními aplikacemi.</p>
+            
+            <div class="app-info">
+                Po přidání na plochu bude aplikace zobrazovat ikonu s názvem "Kotak Engine" pro rychlý přístup.
+            </div>
         </div>
     </div>
 
@@ -328,13 +343,6 @@
         if (isInStandaloneMode()) {
             window.location.href = 'https://kotakovec.github.io/chat/chat/';
         }
-        
-        // Kontrola existence ikony
-        const logoImg = document.querySelector('.logo-img');
-        logoImg.onerror = function() {
-            this.style.display = 'none';
-            document.querySelector('.logo span').style.display = 'flex';
-        };
     </script>
 </body>
 </html>
