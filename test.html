@@ -14,9 +14,6 @@
     <!-- Ikony pro PWA -->
     <link rel="icon" href="images/logo.png">
     
-    <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
-    
     <style>
         /* Styly pro zabezpečovací obrazovku */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
@@ -86,6 +83,9 @@
             display: none;
             width: 100%;
             height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
         }
         
         /* Styly pro hlavní aplikaci */
@@ -420,19 +420,6 @@
               // Inicializace EmailJS
               emailjs.init(emailjsConfig.publicKey);
               console.log("Email.js byl automaticky nakonfigurován");
-            }
-
-            // Načtení Email.js konfigurace z localStorage
-            function loadEmailjsConfig() {
-              const publicKey = localStorage.getItem("emailjs_public_key");
-              const serviceId = localStorage.getItem("emailjs_service_id");
-              const templateId = localStorage.getItem("emailjs_template_id");
-              
-              if (publicKey && serviceId && templateId) {
-                // Inicializace EmailJS
-                emailjs.init(publicKey);
-                console.log("Email.js je nakonfigurován");
-              }
             }
 
             // Registrace
