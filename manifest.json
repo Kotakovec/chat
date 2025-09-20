@@ -1,7 +1,7 @@
 {
   "name": "Kotak Engine",
-  "short_name": "KotakEngine",
-  "description": "KotakEngine Chat aplikace",
+  "short_name": "Kotak Engine",
+  "description": "Kotak Engine Chat aplikace",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f7f7f7",
