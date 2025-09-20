@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Kotak Engine</title>
+    <title>KotakEngine Chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- PWA Metadata -->
@@ -11,11 +11,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
-    <!-- Ikony pro PWA -->
+    <!-- Ikony pro PWA - přidány všechny potřebné velikosti -->
     <link rel="icon" type="image/png" href="https://kotakovec.github.io/chat/images/logo.png">
     <link rel="apple-touch-icon" href="https://kotakovec.github.io/chat/images/logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://kotakovec.github.io/chat/images/logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://kotakovec.github.io/chat/images/logo.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="https://kotakovec.github.io/chat/images/logo.png">
     
-    <!-- Manifest -->
+    <!-- Manifest s absolutní cestou -->
     <link rel="manifest" href="https://kotakovec.github.io/chat/manifest.json">
     
     <style>
@@ -32,65 +35,225 @@
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(135deg, #f7f9fc 0%, #e8ecf2 100%);
             color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            line-height: 1.6;
         }
         
         .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
             text-align: center;
-            max-width: 400px;
-            padding: 30px;
+        }
+        
+        .logo-container {
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease;
         }
         
         .logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 20px;
+            width: 150px;
+            height: 150px;
+            border-radius: 25px;
             background: linear-gradient(135deg, #0088cc, #0055aa);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
-            box-shadow: 0 6px 15px rgba(0, 136, 204, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
             margin: 0 auto 20px;
+            overflow: hidden;
         }
         
         .logo-text {
+            font-size: 18px;
+            font-weight: 700;
             text-align: center;
             color: white;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            line-height: 1.2;
         }
         
         h1 {
-            font-size: 28px;
-            margin-bottom: 15px;
+            font-size: 32px;
+            margin-bottom: 10px;
             color: #0088cc;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
         
-        .message {
+        .subtitle {
             font-size: 18px;
-            color: #555;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .instructions {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            max-width: 550px;
+            width: 100%;
+            margin-bottom: 30px;
+            animation: slideUp 0.8s ease;
+        }
+        
+        .instructions h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #0088cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .instructions h2 i {
+            margin-right: 10px;
+        }
+        
+        .instruction-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            text-align: left;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f9f9f9;
+            transition: transform 0.3s;
+        }
+        
+        .instruction-step:hover {
+            transform: translateX(5px);
+            background: #f0f7ff;
+        }
+        
+        .step-number {
+            background: #0088cc;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+        
+        .step-text {
+            flex: 1;
+            font-size: 16px;
+        }
+        
+        .device-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+        
+        .device-btn {
+            background: #e0e0e0;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+        
+        .device-btn.active {
+            background: #0088cc;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 136, 204, 0.3);
+        }
+        
+        .device-instructions {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .device-instructions.active {
+            display: block;
+        }
+        
+        .note {
+            margin-top: 25px;
+            font-style: italic;
+            color: #666;
+            font-size: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border-left: 4px solid #0088cc;
+        }
+        
+        .check-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            background: #0088cc;
+            color: white;
+            border-radius: 50%;
+            line-height: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .app-info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         @media (max-width: 600px) {
-            .container {
+            h1 {
+                font-size: 26px;
+            }
+            
+            .instructions {
                 padding: 20px;
             }
             
-            h1 {
-                font-size: 24px;
+            .instruction-step {
+                flex-direction: column;
             }
             
-            .message {
-                font-size: 16px;
+            .step-number {
+                margin-bottom: 10px;
             }
             
-            .logo {
-                width: 100px;
-                height: 100px;
+            .device-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .logo-text {
                 font-size: 16px;
             }
         }
@@ -98,14 +261,80 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">
-            <div class="logo-text">Kotak Engine</div>
+        <div class="logo-container">
+            <div class="logo">
+                <div class="logo-text">Kotak<br>Engine</div>
+            </div>
+            <h1>KotakEngine Chat</h1>
+            <p class="subtitle">Komunikace snadno a rychle</p>
         </div>
-        <h1>Kotak Engine</h1>
-        <div class="message">Tento chat je dostupný pouze jako webová aplikace.</div>
+        
+        <div class="instructions">
+            <h2><span class="check-icon">✓</span> Přidejte si aplikaci na plochu</h2>
+            
+            <div class="device-selector">
+                <button class="device-btn active" data-device="ios">iOS</button>
+                <button class="device-btn" data-device="android">Android</button>
+            </div>
+            
+            <div class="device-instructions active" id="ios-instructions">
+                <div class="instruction-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Otevřete Safari prohlížeč</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Klikněte na tlačítko sdílení (čtverec se šipkou nahoru)</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Přejděte dolů a vyberte "Přidat na plochu"</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">Potvrďte výběr a aplikace se přidá na plochu</div>
+                </div>
+            </div>
+            
+            <div class="device-instructions" id="android-instructions">
+                <div class="instruction-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Otevřete Chrome prohlížeč</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Klikněte na menu (tři tečky v pravém horním rohu)</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Vyberte "Přidat na plochu" nebo "Nainstalovat"</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">Potvrďte výběr a aplikace se přidá na plochu</div>
+                </div>
+            </div>
+            
+            <p class="note">Aplikace je dostupná pouze jako webová aplikace přidaná na plochu. Po přidání ikony na plochu ji najdete mezi ostatními aplikacemi.</p>
+            
+            <div class="app-info">
+                Po přidání na plochu bude aplikace zobrazovat ikonu s názvem "Kotak Engine" pro rychlý přístup.
+            </div>
+        </div>
     </div>
 
     <script>
+        // Přepínání mezi instrukcemi pro iOS a Android
+        document.querySelectorAll('.device-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.device-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.device-instructions').forEach(instruction => instruction.classList.remove('active'));
+                
+                button.classList.add('active');
+                document.getElementById(button.dataset.device + '-instructions').classList.add('active');
+            });
+        });
+        
         // Kontrola, zda je aplikace v standalone režimu
         function isInStandaloneMode() {
             return (window.matchMedia('(display-mode: standalone)').matches) || 
