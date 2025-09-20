@@ -18,6 +18,7 @@
     <link rel="manifest" href="manifest.json">
     
     <style>
+        /* Styly pro zabezpečovací obrazovku */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
         
         * {
@@ -37,7 +38,7 @@
             padding: 20px;
         }
         
-        .container {
+        .security-container {
             text-align: center;
             max-width: 400px;
             padding: 30px;
@@ -46,20 +47,20 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
         
-        h1 {
+        .security-container h1 {
             font-size: 32px;
             margin-bottom: 15px;
             color: #0088cc;
         }
         
-        .message {
+        .security-container .message {
             font-size: 18px;
             color: #555;
             line-height: 1.5;
             margin-bottom: 20px;
         }
         
-        .instruction {
+        .security-container .instruction {
             font-size: 16px;
             color: #666;
             background: #f8f9fa;
@@ -69,7 +70,7 @@
             margin-top: 20px;
         }
         
-        .error-message {
+        .security-container .error-message {
             display: none;
             color: #d32f2f;
             font-size: 16px;
@@ -80,13 +81,14 @@
             border-left: 4px solid #d32f2f;
         }
         
-        /* Styly pro hlavní aplikaci (skryté dokud není ověřeno) */
+        /* Hlavní aplikace (skrytá dokud není ověřeno) */
         #mainApp {
             display: none;
             width: 100%;
             height: 100%;
         }
         
+        /* Styly pro hlavní aplikaci */
         @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
         #mainApp body, #mainApp html {
@@ -218,15 +220,15 @@
         }
         
         @media (max-width: 600px) {
-            .container {
+            .security-container {
                 padding: 20px;
             }
             
-            h1 {
+            .security-container h1 {
                 font-size: 28px;
             }
             
-            .message {
+            .security-container .message {
                 font-size: 16px;
             }
         }
@@ -234,7 +236,7 @@
 </head>
 <body>
     <!-- Zabezpečovací obrazovka -->
-    <div class="container" id="securityScreen">
+    <div class="security-container" id="securityScreen">
         <h1>Kotak Engine</h1>
         <div class="message">Tento chat je dostupný pouze jako webová aplikace na iOS nebo Android zařízeních.</div>
         
@@ -391,22 +393,17 @@
             let otherUserEmail = ""; // Uložíme si email příjemce pro notifikace
 
             // Persistent login
-            window.onload = () => {
-              // Automatická konfigurace Email.js pro všechny uživatele
-              setupEmailJS();
-              
-              const savedUser = localStorage.getItem("currentUser");
-              if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                db.ref("users/" + currentUser.id).once("value", snap => {
-                  const data = snap.val();
-                  currentUser = { id: currentUser.id, name: data.name, username: data.username, photo: data.photo||"", email: data.email||"" };
-                  showMainScreen();
-                });
-              }
-            };
+            const savedUser = localStorage.getItem("currentUser");
+            if (savedUser) {
+              currentUser = JSON.parse(savedUser);
+              db.ref("users/" + currentUser.id).once("value", snap => {
+                const data = snap.val();
+                currentUser = { id: currentUser.id, name: data.name, username: data.username, photo: data.photo||"", email: data.email||"" };
+                showMainScreen();
+              });
+            }
 
-            // Automatická konfigurace Email.js
+            // Automatická konfigurace Email.js pro všechny uživatele
             function setupEmailJS() {
               // Nastavení Email.js konfigurace pro všechny uživatele
               const emailjsConfig = {
@@ -706,6 +703,9 @@
 
             // zavření popupu při kliknutí mimo box
             emailPopup.onclick = (e) => { if(e.target===emailPopup) emailPopup.style.display="none"; };
+            
+            // Nastavení Email.js
+            setupEmailJS();
         }
         
         // Spuštění kontroly zařízení
