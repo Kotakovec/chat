@@ -11,9 +11,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
-    <!-- Ikony pro PWA -->
-    <link rel="icon" type="image/png" href="https://kotakovec.github.io/chat/images/logo.png">
-    <link rel="apple-touch-icon" href="https://kotakovec.github.io/chat/images/logo.png">
+    <!-- Ikony pro PWA - základní favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     
     <!-- Manifest -->
     <link rel="manifest" href="https://kotakovec.github.io/chat/manifest.json">
@@ -56,12 +55,14 @@
             font-weight: bold;
             box-shadow: 0 6px 15px rgba(0, 136, 204, 0.3);
             margin: 0 auto 20px;
+            position: relative;
         }
         
-        .logo-text {
-            text-align: center;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        .logo::before {
+            content: "KE";
+            font-size: 40px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
         }
         
         h1 {
@@ -91,16 +92,17 @@
             .logo {
                 width: 100px;
                 height: 100px;
-                font-size: 16px;
+            }
+            
+            .logo::before {
+                font-size: 32px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">
-            <div class="logo-text">Kotak Engine</div>
-        </div>
+        <div class="logo"></div>
         <h1>Kotak Engine</h1>
         <div class="message">Tento chat je dostupný pouze jako webová aplikace.</div>
     </div>
@@ -116,6 +118,21 @@
         if (isInStandaloneMode()) {
             window.location.href = 'https://kotakovec.github.io/chat/chat/';
         }
+        
+        // Dynamické vytvoření ikon pro Apple, pokud nejsou k dispozici
+        function createAppleIcons() {
+            const iconSizes = [180, 167, 152];
+            iconSizes.forEach(size => {
+                const link = document.createElement('link');
+                link.rel = 'apple-touch-icon';
+                link.sizes = `${size}x${size}`;
+                link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230088cc%22/><text x=%2250%22 y=%2260%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22>KE</text></svg>`;
+                document.head.appendChild(link);
+            });
+        }
+        
+        // Vytvoření ikon po načtení stránky
+        window.addEventListener('load', createAppleIcons);
     </script>
 </body>
 </html>
