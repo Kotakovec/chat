@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Kotak Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body, html {
+  margin:0; padding:0; height:100%; 
+  font-family: 'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif;
+  background:#f7f7f7;
+}
+
+input, button, select, textarea {
+  font-size: 16px;
+}
+
+#topBar {
+  height:50px; background:#0088cc; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:bold; position:relative;
+}
+
+#profileBtn, #backBtn { 
+  position:absolute; left:10px; cursor:pointer; 
+}
+
+#profilePanel {
+  display:none; position:absolute; top:50px; left:0; width:200px;
+  background:#fff; border:1px solid #ccc; padding:10px; z-index:1000;
+}
+
+#profilePanel img { width:50px; height:50px; border-radius:50%; margin-bottom:10px; }
+#profilePanel button { width:100%; margin-top:10px; padding:5px; border:none; border-radius:4px; background:#0088cc; color:#fff; cursor:pointer; }
+
+#loginScreen, #mainScreen {
+  width:100%; height:calc(100% - 50px); display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+
+#mainScreen { display:none; }
+
+#chatContainer { display:flex; flex-direction:column; width:100%; height:100%; }
+
+#chatHeaderView {
+  padding:10px;
+  border-bottom:1px solid #ccc;
+  background:#f0f0f0;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  width:100%;
+  box-sizing:border-box;
+}
+
+#chatMessages {
+  flex:1;
+  padding:10px;
+  overflow-y:auto;
+  background:#fafafa;
+  width:100%;
+  box-sizing:border-box;
+}
+
+#chatInput {
+  display:flex;
+  padding:5px;
+  border-top:1px solid #ccc;
+  background:#f0f0f0;
+  width:100%;
+  box-sizing:border-box;
+}
+#chatInput input {
+  flex:1;
+  padding:5px;
+  border:1px solid #ccc;
+  border-radius:4px;
+}
+#chatInput button {
+  padding:5px 10px;
+  margin-left:5px;
+  border:none;
+  border-radius:4px;
+  background:#0088cc;
+  color:#fff;
+  cursor:pointer;
+}
+
+.userItem { padding:10px; border-bottom:1px solid #eee; cursor:pointer; display:flex; align-items:center; position:relative; }
+.userItem img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
+.userItem:hover { background:#eee; }
+
+.contactMenuBtn { margin-left:auto; cursor:pointer; }
+.contactMenu { position:absolute; background:#fff; border:1px solid #ccc; padding:5px; z-index:100; right:5px; top:35px; display:none; }
+
+#searchContainer { display:none; flex-direction:column; padding:10px; }
+#searchContainer input { padding:5px; margin-bottom:5px; border:1px solid #ccc; border-radius:4px; }
+
+#chatList { flex:1; overflow-y:auto; width:100%; }
+
+.messageRow {
+  display:flex;
+  align-items:flex-start;
+  margin-bottom:5px;
+}
+
+.messageRow .senderName {
+  width:34px;
+  display:flex; align-items:center;
+}
+
+.messageRow .senderName img {
+  width:24px; height:24px; border-radius:50%;
+}
+
+.messageRow .messageText { flex:1; word-break: break-word; padding-left:5px; }
+
+#emailNotice {
+  padding:10px; font-size:14px; color:#555; cursor:pointer; text-align:center;
+}
+#emailPopup {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+  background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:10000;
+}
+#emailPopup div {
+  background:#fff; padding:20px; border-radius:8px; width:90%; max-width:300px; text-align:center;
+}
+#emailPopup input {
+  width:100%; padding:5px; margin-top:10px;
+}
+#emailPopup button {
+  padding:5px 10px; background:#0088cc; color:#fff; border:none; border-radius:4px; cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <div id="profileBtn">☰</div>
+  <div id="backBtn" style="display:none;">←</div>
+  Kotak Engine
+</div>
+
+<div id="profilePanel">
+  <img id="profilePic" src="" alt="Profilovka">
+  <div id="profileName"></div>
+  <div id="profileUsername"></div>
+  <div id="profileEmail" style="font-size:12px; color:#333;"></div>
+  <input type="file" id="uploadPic"><br><br>
+  <button id="panelLogoutBtn">Odhlásit se</button>
+</div>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+  <h2>Přihlášení</h2>
+  <div id="registerForm">
+    <input type="text" id="regName" placeholder="Jméno" required><br>
+    <input type="text" id="regUsername" placeholder="Username" required><br>
+    <input type="password" id="regPass" placeholder="Heslo" required><br>
+    <button id="regBtn">Registrovat</button>
+  </div>
+  <div id="loginForm" style="margin-top:10px;">
+    <input type="text" id="loginUsername" placeholder="Username" required><br>
+    <input type="password" id="loginPass" placeholder="Heslo" required><br>
+    <button id="loginBtn">Přihlásit se</button>
+  </div>
+</div>
+
+<!-- Main Screen -->
+<div id="mainScreen">
+  <div id="chatSelector" style="display:flex; flex-direction:column; width:100%; height:100%;">
+    <button id="newChatBtn">Zahájit chat</button>
+    <div id="searchContainer">
+      <input type="text" id="searchInput" placeholder="Vyhledej uživatele">
+      <div id="searchResults"></div>
+    </div>
+    <div id="chatList"></div>
+    <!-- Email notice -->
+    <div id="emailNotice">Pokud chceš dostávat notifikace, přidej svoji emailovou adresu.</div>
+  </div>
+  <div id="chatView" style="display:none; flex-direction:column; height:100%; width:100%;">
+    <div id="chatHeaderView">Chat</div>
+    <div id="chatMessages"></div>
+    <div id="chatInput">
+      <input type="text" id="msgInput" placeholder="Napiš zprávu...">
+      <button id="sendBtn">Odeslat</button>
+    </div>
+  </div>
+</div>
+
+<!-- Email popup -->
+<div id="emailPopup">
+  <div>
+    <h3>Zadej svůj email</h3>
+    <input type="email" id="emailInput" placeholder="Email"><br><br>
+    <button id="saveEmailBtn">Uložit</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+<script>
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyD96lOIJjN9_aFMlstYbx4aUaH_xwjtK8s",
+  authDomain: "chat-a99ee.firebaseapp.com",
+  projectId: "chat-a99ee",
+  storageBucket: "chat-a99ee.appspot.com",
+  messagingSenderId: "558124959244",
+  appId: "1:558124959244:web:e603b56a1fbd9c2d12d029",
+  measurementId: "G-2C6T31PMGS"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let currentUser = null, currentChatId = null, messagesListener = null;
+let otherUserName = ""; // Uložíme si jméno příjemce pro notifikace
+let otherUserEmail = ""; // Uložíme si email příjemce pro notifikace
+
+// Persistent login
+window.onload = () => {
+  // Automatická konfigurace Email.js pro všechny uživatele
+  setupEmailJS();
+  
+  const savedUser = localStorage.getItem("currentUser");
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+    db.ref("users/" + currentUser.id).once("value", snap => {
+      const data = snap.val();
+      currentUser = { id: currentUser.id, name: data.name, username: data.username, photo: data.photo||"", email: data.email||"" };
+      showMainScreen();
+    });
+  }
+};
+
+// Automatická konfigurace Email.js
+function setupEmailJS() {
+  // Nastavení Email.js konfigurace pro všechny uživatele
+  const emailjsConfig = {
+    publicKey: "auHvXOksKCMUwN4u3",
+    serviceId: "service_br3udl5",
+    templateId: "template_ux4wu09"
+  };
+  
+  // Uložení do localStorage
+  localStorage.setItem("emailjs_public_key", emailjsConfig.publicKey);
+  localStorage.setItem("emailjs_service_id", emailjsConfig.serviceId);
+  localStorage.setItem("emailjs_template_id", emailjsConfig.templateId);
+  
+  // Inicializace EmailJS
+  emailjs.init(emailjsConfig.publicKey);
+  console.log("Email.js byl automaticky nakonfigurován");
+}
+
+// Načtení Email.js konfigurace z localStorage
+function loadEmailjsConfig() {
+  const publicKey = localStorage.getItem("emailjs_public_key");
+  const serviceId = localStorage.getItem("emailjs_service_id");
+  const templateId = localStorage.getItem("emailjs_template_id");
+  
+  if (publicKey && serviceId && templateId) {
+    // Inicializace EmailJS
+    emailjs.init(publicKey);
+    console.log("Email.js je nakonfigurován");
+  }
+}
+
+// Registrace
+document.getElementById("regBtn").onclick = () => {
+  const name = document.getElementById("regName").value.trim();
+  const username = document.getElementById("regUsername").value.trim();
+  const pass = document.getElementById("regPass").value.trim();
+  if (!name || !username || !pass) { alert("Vyplň všechna pole"); return; }
+
+  db.ref("users").orderByChild("username").equalTo(username).once("value", snap => {
+    if (snap.exists()) { alert("Username už existuje"); return; }
+    const newUserRef = db.ref("users").push();
+    newUserRef.set({ name, username, password: pass, photo: "", email: "" });
+    alert("Registrace úspěšná! Přihlaš se.");
+  });
+};
+
+// Login
+document.getElementById("loginBtn").onclick = () => {
+  const username = document.getElementById("loginUsername").value.trim();
+  const pass = document.getElementById("loginPass").value.trim();
+  if (!username || !pass) { alert("Vyplň username i heslo"); return; }
+
+  db.ref("users").orderByChild("username").equalTo(username).once("value", snap => {
+    if (!snap.exists()) { alert("Username nenalezen"); return; }
+    let found = false;
+    snap.forEach(child => {
+      const data = child.val();
+      if (data.password === pass) {
+        currentUser = { id: child.key, name: data.name, username: data.username, photo: data.photo||"", email: data.email||"" };
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        showMainScreen();
+        found = true;
+      }
+    });
+    if (!found) alert("Špatné heslo");
+  });
+};
+
+// Show main screen
+function showMainScreen() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("mainScreen").style.display = "flex";
+  document.getElementById("profileName").innerText = currentUser.name;
+  document.getElementById("profileUsername").innerText = currentUser.username;
+  document.getElementById("profilePic").src = currentUser.photo || "https://via.placeholder.com/50";
+  document.getElementById("profileEmail").innerText = currentUser.email || "";
+  document.getElementById("profileBtn").style.display = "block";
+  loadChatList();
+}
+
+// Logout
+document.getElementById("panelLogoutBtn").onclick = () => {
+  currentUser = null;
+  localStorage.removeItem("currentUser");
+  document.getElementById("mainScreen").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+};
+
+// Profile panel toggle
+const profileBtn = document.getElementById("profileBtn");
+const profilePanel = document.getElementById("profilePanel");
+profileBtn.onclick = (e) => { e.stopPropagation(); profilePanel.style.display = profilePanel.style.display === "block" ? "none" : "block"; }
+document.body.addEventListener("click", () => { profilePanel.style.display = "none"; });
+profilePanel.addEventListener("click", e => { e.stopPropagation(); });
+
+// Back button
+const backBtn = document.getElementById("backBtn");
+backBtn.onclick = () => {
+  document.getElementById("chatView").style.display = "none";
+  document.getElementById("chatSelector").style.display = "flex";
+  backBtn.style.display = "none";
+  profileBtn.style.display = "block";
+};
+
+// Upload profile pic
+document.getElementById("uploadPic").onchange = (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const url = evt.target.result;
+    db.ref("users/" + currentUser.id).update({ photo: url });
+    currentUser.photo = url;
+    document.getElementById("profilePic").src = url;
+    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  };
+  reader.readAsDataURL(file);
+};
+
+// Chat list
+let chatListListener = null;
+function loadChatList() {
+  const chatListDiv = document.getElementById("chatList");
+  chatListDiv.innerHTML = "";
+  if (chatListListener) chatListListener.off();
+  chatListListener = db.ref("privateChats");
+  chatListListener.on("value", snap => {
+    chatListDiv.innerHTML = "";
+    snap.forEach(chatSnap => {
+      const chatId = chatSnap.key;
+      if (chatId.includes(currentUser.id)) {
+        const otherId = chatId.replace(currentUser.id + "_", "").replace("_" + currentUser.id, "");
+        db.ref("users/" + otherId).once("value", uSnap => {
+          const userName = uSnap.val()?.name || "Neznámý";
+          const photo = uSnap.val()?.photo || "https://via.placeholder.com/40";
+          if (!document.getElementById("chatUser_" + otherId)) {
+            const div = document.createElement("div");
+            div.className = "userItem";
+            div.id = "chatUser_" + otherId;
+            const img = document.createElement("img");
+            img.src = photo;
+            const nameSpan = document.createElement("span");
+            nameSpan.innerText = userName;
+            div.appendChild(img);
+            div.appendChild(nameSpan);
+            div.onclick = () => openChat(otherId, userName);
+            chatListDiv.appendChild(div);
+          }
+        });
+      }
+    });
+  });
+}
+
+// New chat search
+document.getElementById("newChatBtn").onclick = () => {
+  const sc = document.getElementById("searchContainer");
+  sc.style.display = sc.style.display === "flex" ? "none" : "flex";
+  document.getElementById("searchInput").value = "";
+  document.getElementById("searchResults").innerHTML = "";
+};
+
+document.getElementById("searchInput").oninput = (e) => {
+  const val = e.target.value.toLowerCase();
+  const resultsDiv = document.getElementById("searchResults");
+  resultsDiv.innerHTML = "";
+  if (!val) return;
+  db.ref("users").once("value", snap => {
+    snap.forEach(uSnap => {
+      const data = uSnap.val();
+      if (data.name.toLowerCase().includes(val) && uSnap.key !== currentUser.id) {
+        const div = document.createElement("div");
+        div.className = "userItem";
+        const photo = data.photo || "https://via.placeholder.com/30";
+        div.innerHTML = `<img src="${photo}">${data.name}`;
+        div.onclick = () => {
+          openChat(uSnap.key, data.name);
+          document.getElementById("searchContainer").style.display = "none";
+        };
+        resultsDiv.appendChild(div);
+      }
+    });
+  });
+};
+
+// Send message
+document.getElementById("sendBtn").onclick = sendMessage;
+document.getElementById("msgInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+function sendMessage() {
+  const text = document.getElementById("msgInput").value.trim();
+  if (!text || !currentChatId) return;
+  db.ref("privateChats/" + currentChatId + "/messages").push({
+    from: currentUser.id,
+    text: text,
+    ts: Date.now()
+  });
+  document.getElementById("msgInput").value = "";
+}
+
+// Open chat
+function openChat(otherId, otherName) {
+  if (otherId === currentUser.id) { alert("Nemůžeš si psát sám sobě!"); return; }
+
+  db.ref("users/" + otherId).once("value", uSnap => {
+    const otherUserPhoto = uSnap.val()?.photo || "https://via.placeholder.com/30";
+    otherUserEmail = uSnap.val()?.email || "";
+
+    const ids = [currentUser.id, otherId].sort();
+    currentChatId = ids.join("_");
+    otherUserName = otherName; // Uložíme si jméno příjemce
+
+    document.getElementById("chatSelector").style.display = "none";
+    document.getElementById("chatView").style.display = "flex";
+    document.getElementById("chatHeaderView").innerText = otherName;
+
+    backBtn.style.display = "block";
+    profileBtn.style.display = "none";
+
+    document.getElementById("chatMessages").innerHTML = "";
+
+    if (messagesListener) messagesListener.off();
+
+    messagesListener = db.ref("privateChats/" + currentChatId + "/messages");
+    messagesListener.on("child_added", snap => {
+      const msg = snap.val();
+      const isMe = msg.from === currentUser.id;
+      const photo = isMe ? currentUser.photo || "https://via.placeholder.com/30" : otherUserPhoto;
+
+      const div = document.createElement("div");
+      div.className = "messageRow";
+      div.innerHTML = `<div class="senderName"><img src="${photo}"></div>
+                       <div class="messageText">${msg.text}</div>`;
+
+      const msgDiv = document.getElementById("chatMessages");
+      msgDiv.appendChild(div);
+      msgDiv.scrollTop = msgDiv.scrollHeight;
+      
+      // Odeslání notifikace, pokud zpráva není od aktuálního uživatele
+      // a příjemce má nastavený email a Email.js je nakonfigurován
+      if (!isMe && otherUserEmail) {
+        sendEmailNotification(otherUserEmail, otherName, currentUser.name, msg.text);
+      }
+    });
+  });
+}
+
+// Funkce pro odeslání email notifikace
+function sendEmailNotification(toEmail, toName, fromName, message) {
+  const publicKey = localStorage.getItem("emailjs_public_key");
+  const serviceId = localStorage.getItem("emailjs_service_id");
+  const templateId = localStorage.getItem("emailjs_template_id");
+  
+  // Kontrola, zda je Email.js nakonfigurován
+  if (!publicKey || !serviceId || !templateId) {
+    console.log("Email.js není nakonfigurován");
+    return;
+  }
+  
+  // Inicializace EmailJS (pro jistotu)
+  emailjs.init(publicKey);
+  
+  const templateParams = {
+    to_email: toEmail,
+    to_name: toName,
+    from_name: fromName,
+    message: message,
+    app_name: "Kotak Engine"
+  };
+
+  emailjs.send(serviceId, templateId, templateParams)
+    .then(function(response) {
+      console.log('Email notifikace odeslána!', response.status, response.text);
+    }, function(error) {
+      console.error('Chyba při odesílání emailu:', error);
+    });
+}
+
+// Email popup
+const emailNotice = document.getElementById("emailNotice");
+const emailPopup = document.getElementById("emailPopup");
+const emailInput = document.getElementById("emailInput");
+const saveEmailBtn = document.getElementById("saveEmailBtn");
+
+emailNotice.onclick = () => {
+  emailPopup.style.display = "flex";
+  emailInput.value = currentUser.email || "";
+};
+
+saveEmailBtn.onclick = () => {
+  const email = emailInput.value.trim();
+  if (!email) return alert("Zadej email");
+  db.ref("users/" + currentUser.id).update({ email });
+  currentUser.email = email;
+  document.getElementById("profileEmail").innerText = email;
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  emailPopup.style.display = "none";
+};
+
+// zavření popupu při kliknutí mimo box
+emailPopup.onclick = (e) => { if(e.target===emailPopup) emailPopup.style.display="none"; };
+</script>
+
+</body>
+</html>
