@@ -1,12 +1,22 @@
 {
-  "name": "KotakEngine",
+  "name": "Kotak Engine",
   "short_name": "KotakEngine",
-  "start_url": "./chat.html",
+  "description": "KotakEngine Chat aplikace",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f7f7f7",
   "theme_color": "#0088cc",
+  "orientation": "portrait",
   "icons": [
-    { "src": "images/logo-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "images/logo-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }

@@ -1,163 +1,268 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-<meta charset="UTF-8">
-<title>KotakEngine Chat</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<!-- Ikony pro PWA -->
-<link rel="icon" type="image/png" href="https://kotakovec.github.io/chat/images/logo-192.png">
-<link rel="apple-touch-icon" href="https://kotakovec.github.io/chat/images/logo-512.png">
-<meta name="theme-color" content="#0088cc">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kotak Engine">
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-
-body, html {
-  margin:0; padding:0; height:100%;
-  font-family: 'Roboto', sans-serif;
-  background:#f7f7f7;
-}
-
-iframe {
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  border:none;
-  z-index:1000;
-}
-
-#btnLauncher {
-  position:fixed;
-  top:10px;
-  right:10px;
-  padding:8px 14px;
-  font-size:14px;
-  background:#ff4444;
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  z-index:1100;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-#message {
-  display:flex;
-  flex-direction: column;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
-  text-align:center;
-  font-size:24px;
-  font-weight:bold;
-  color:#333;
-  padding:20px;
-}
-
-.install-info {
-  margin-top: 20px;
-  font-size: 16px;
-  max-width: 400px;
-  line-height: 1.5;
-  color: #555;
-}
-
-.logo {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 20px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #0088cc, #0055aa);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.hidden {
-  display: none;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>KotakEngine Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- PWA Metadata -->
+    <meta name="theme-color" content="#0088cc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kotak Engine">
+    
+    <!-- Ikony pro PWA -->
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body, html {
+            height: 100%;
+            font-family: 'Roboto', sans-serif;
+            background: #f7f7f7;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .logo-container {
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #0088cc, #0055aa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin: 0 auto 15px;
+        }
+        
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            object-fit: cover;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #0088cc;
+        }
+        
+        .instructions {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        
+        .instructions h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #0088cc;
+        }
+        
+        .instruction-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .step-number {
+            background: #0088cc;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .step-text {
+            flex: 1;
+        }
+        
+        .device-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .device-btn {
+            background: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .device-btn.active {
+            background: #0088cc;
+            color: white;
+        }
+        
+        .device-instructions {
+            display: none;
+        }
+        
+        .device-instructions.active {
+            display: block;
+        }
+        
+        .note {
+            margin-top: 20px;
+            font-style: italic;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 24px;
+            }
+            
+            .instructions {
+                padding: 20px;
+            }
+            
+            .instruction-step {
+                flex-direction: column;
+            }
+            
+            .step-number {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
 </head>
 <body>
-
-<div id="content"></div>
-
-<script>
-// Kontrola PWA režimu
-function isInStandaloneMode() {
-  return (window.matchMedia('(display-mode: standalone)').matches) || 
-         (window.navigator.standalone === true);
-}
-
-const content = document.getElementById('content');
-
-if (isInStandaloneMode()) {
-  // Jsme v PWA režimu - zobrazíme chat
-  content.innerHTML = `
-    <iframe src="https://kotakovec.github.io/chat/chat/"></iframe>
-    <button id="btnLauncher">Launcher</button>
-  `;
-
-  document.getElementById('btnLauncher').onclick = () => {
-    window.location.href = "https://kotakovec.github.io/chat/";
-  };
-
-  // Detekce zatřesení telefonu
-  let lastX = null, lastY = null, lastZ = null;
-  let lastTime = 0;
-
-  window.addEventListener("devicemotion", function(event) {
-    let acc = event.accelerationIncludingGravity;
-    if (!acc) return;
-
-    let curTime = new Date().getTime();
-    if ((curTime - lastTime) > 100) {
-      let diffTime = curTime - lastTime;
-      lastTime = curTime;
-
-      if (lastX !== null) {
-        let speed = Math.abs(acc.x - lastX + acc.y - lastY + acc.z - lastZ) / diffTime * 10000;
-        if (speed > 1500) {
-          window.location.href = "https://kotakovec.github.io/chat/";
-          if (navigator.vibrate) navigator.vibrate(200);
-        }
-      }
-
-      lastX = acc.x;
-      lastY = acc.y;
-      lastZ = acc.z;
-    }
-  });
-
-} else {
-  // Nejsme v PWA režimu - zobrazíme instrukce
-  content.innerHTML = `
-    <div id="message">
-      <div class="logo">Kotak Engine</div>
-      Tento chat je dostupný pouze jako webová aplikace!
-      <div class="install-info">
-        Pro použití chatu si jej přidejte na plochu vašeho zařízení:
-        <br><br>
-        Na Androidu: v menu prohlížeče zvolte "Přidat na plochu".
-        <br><br>
-        Na iOS: v Safari sdílecím menu zvolte "Přidat na plochu".
-        <br><br>
-        Po přidání na plochu aplikaci spusťte z ikony.
-      </div>
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo">
+                <img src="images/logo.png" alt="Kotak Engine Logo" class="logo-img" onerror="this.style.display='none';">
+                <span style="display:none;">KE</span>
+            </div>
+            <h1>KotakEngine Chat</h1>
+        </div>
+        
+        <div class="instructions">
+            <h2>Přidejte si aplikaci na plochu</h2>
+            
+            <div class="device-selector">
+                <button class="device-btn active" data-device="ios">iOS</button>
+                <button class="device-btn" data-device="android">Android</button>
+            </div>
+            
+            <div class="device-instructions active" id="ios-instructions">
+                <div class="instruction-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Otevřete Safari prohlížeč</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Klikněte na tlačítko sdílení (čtverec se šipkou nahoru)</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Přejděte dolů a vyberte "Přidat na plochu"</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">Potvrďte výběr a aplikace se přidá na plochu</div>
+                </div>
+            </div>
+            
+            <div class="device-instructions" id="android-instructions">
+                <div class="instruction-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Otevřete Chrome prohlížeč</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Klikněte na menu (tři tečky v pravém horním rohu)</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Vyberte "Přidat na plochu"</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">Potvrďte výběr a aplikace se přidá na plochu</div>
+                </div>
+            </div>
+            
+            <p class="note">Aplikace je dostupná pouze jako webová aplikace přidaná na plochu.</p>
+        </div>
     </div>
-  `;
-}
-</script>
 
+    <script>
+        // Přepínání mezi instrukcemi pro iOS a Android
+        document.querySelectorAll('.device-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.device-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.device-instructions').forEach(instruction => instruction.classList.remove('active'));
+                
+                button.classList.add('active');
+                document.getElementById(button.dataset.device + '-instructions').classList.add('active');
+            });
+        });
+        
+        // Kontrola, zda je aplikace v standalone režimu
+        function isInStandaloneMode() {
+            return (window.matchMedia('(display-mode: standalone)').matches) || 
+                   (window.navigator.standalone === true);
+        }
+        
+        // Pokud je aplikace v standalone režimu, přesměrujeme na chat
+        if (isInStandaloneMode()) {
+            window.location.href = 'https://kotakovec.github.io/chat/chat/';
+        }
+        
+        // Kontrola existence ikony
+        const logoImg = document.querySelector('.logo-img');
+        logoImg.onerror = function() {
+            this.style.display = 'none';
+            document.querySelector('.logo span').style.display = 'flex';
+        };
+    </script>
 </body>
 </html>
