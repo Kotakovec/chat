@@ -12,8 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
     <!-- Ikony pro PWA -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230088cc%22/><text x=%2250%22 y=%2260%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22>KE</text></svg>">
+    <link rel="icon" href="images/logo.png">
     
     <!-- Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -141,9 +140,34 @@
             }
         }
         
-        // Registrace Service Worker pro PWA funkce
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
+        // Vytvoření ikon pro Apple
+        function createAppleIcons() {
+            // Vytvoření základní apple-touch-icon
+            const icon = document.createElement('link');
+            icon.rel = 'apple-touch-icon';
+            icon.href = 'images/logo.png';
+            document.head.appendChild(icon);
+            
+            // Vytvoření ikon pro specifické rozměry (iOS očekává různé velikosti)
+            const iconSizes = [180, 167, 152, 120, 76, 60];
+            iconSizes.forEach(size => {
+                const link = document.createElement('link');
+                link.rel = 'apple-touch-icon';
+                link.sizes = `${size}x${size}`;
+                link.href = 'images/logo.png'; // Stejný obrázek pro všechny velikosti
+                document.head.appendChild(link);
+            });
+        }
+        
+        // Spuštění kontroly zařízení
+        checkDevice();
+        
+        // Vytvoření ikon po načtení stránky
+        window.addEventListener('load', function() {
+            createAppleIcons();
+            
+            // Registrace Service Worker pro PWA funkce
+            if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
                     .then(function(registration) {
                         console.log('ServiceWorker registrován: ', registration.scope);
@@ -151,31 +175,13 @@
                     .catch(function(error) {
                         console.log('ServiceWorker registrace selhala: ', error);
                     });
-            });
-        }
-        
-        // Požádat o povolení notifikací (pro PWA)
-        if ('Notification' in window) {
-            Notification.requestPermission();
-        }
-        
-        // Spuštění kontroly zařízení
-        checkDevice();
-        
-        // Vytvoření ikon pro Apple
-        function createAppleIcons() {
-            const iconSizes = [180, 167, 152];
-            iconSizes.forEach(size => {
-                const link = document.createElement('link');
-                link.rel = 'apple-touch-icon';
-                link.sizes = `${size}x${size}`;
-                link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230088cc%22/><text x=%2250%22 y=%2260%22 font-size=%2250%22 text-anchor=%22middle%22 fill=%22white%22>KE</text></svg>`;
-                document.head.appendChild(link);
-            });
-        }
-        
-        // Vytvoření ikon po načtení stránky
-        window.addEventListener('load', createAppleIcons);
+            }
+            
+            // Požádat o povolení notifikací (pro PWA)
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+        });
     </script>
 </body>
 </html>
