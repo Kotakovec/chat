@@ -12,7 +12,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-/* Globální nastavení */
 * {
   margin: 0;
   padding: 0;
@@ -44,11 +43,13 @@ body {
   padding-left: env(safe-area-inset-left);
 }
 
-
 .container {
   max-width: 500px;
-  width: 90%;
+  width: 100%;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centrální zarovnání obsahu */
 }
 
 .logo {
@@ -70,12 +71,14 @@ h1 {
   flex-direction: column;
   gap: 15px;
   margin-bottom: 25px;
-  width: 250px;
-  max-width: 100%;
+  width: 100%;          /* aby tlačítka byla full-width v rámci containeru */
+  max-width: 250px;     /* ale ne větší než 250px */
+  align-items: center;  /* zarovnání tlačítek na střed */
 }
 
 .button-container a {
   text-decoration: none;
+  width: 100%; /* zajistí, že link zabere celé tlačítko */
 }
 
 button {
@@ -111,7 +114,6 @@ button:hover {
   color: #fff;
 }
 
-/* 📱 Responzivní úpravy */
 @media (max-width: 600px) {
   .logo {
     width: 90px;
