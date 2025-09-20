@@ -11,12 +11,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="manifest.json">
-    
     <!-- Ikony pro PWA -->
-    <link rel="icon" href="https://via.placeholder.com/64/0088cc/ffffff?text=KE" type="image/png">
-    <link rel="apple-touch-icon" href="https://via.placeholder.com/180/0088cc/ffffff?text=KE">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiMwMDg4Y2MiLz4KPHN2ZyB4PSIxMiIgeT0iMTIiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNOCAxMkgxNk04IDE2SDE2TTggOEgxNloiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMzUiIGZpbGw9IiMwMDg4Y2MiLz4KPHN2ZyB4PSI0MCIgeT0iNDAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik04IDEySDE2TTggMTZIMTZNOCA4SDE2WiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPgo=">
     
     <style>
         /* Styly pro zabezpečovací obrazovku */
@@ -93,8 +90,6 @@
         }
         
         /* Styly pro hlavní aplikaci */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-
         #mainApp body, #mainApp html {
           margin:0; padding:0; height:100%; 
           font-family: 'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -363,7 +358,7 @@
             // Vytvoření základní apple-touch-icon
             const icon = document.createElement('link');
             icon.rel = 'apple-touch-icon';
-            icon.href = 'https://via.placeholder.com/180/0088cc/ffffff?text=KE';
+            icon.href = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMzUiIGZpbGw9IiMwMDg4Y2MiLz4KPHN2ZyB4PSI0MCIgeT0iNDAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik04IDEySDE2TTggMTZIMTZNOCA4SDE2WiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cjwvc3ZnPgo=';
             document.head.appendChild(icon);
             
             // Vytvoření ikon pro specifické rozměry (iOS očekává různé velikosti)
@@ -372,7 +367,7 @@
                 const link = document.createElement('link');
                 link.rel = 'apple-touch-icon';
                 link.sizes = `${size}x${size}`;
-                link.href = 'https://via.placeholder.com/' + size + '/0088cc/ffffff?text=KE';
+                link.href = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0i${size}IiBoZWlnaHQ9IiR7c2l6ZX0iIHZpZXdCb3g9IjAgMCAke3NpemV9ICR7c2l6ZX0iIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIke3NpemV9IiBoZWlnaHQ9IiR7c2l6ZX0iIHJ4PSIyMCIgZmlsbD0iIzAwODhjYyIvPgo8c3ZnIHg9IiR7c2l6ZS80fSIgeT0iJHtzaXplLzR9IiB3aWR0aD0iJHtzaXplLzJ9IiBoZWlnaHQ9IiR7c2l6ZS8yfSIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNOCAxMkgxNk04IDE2SDE2TTggOEgxNloiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo8L3N2Zz4K`.replace(/\${size}/g, size);
                 document.head.appendChild(link);
             });
         }
