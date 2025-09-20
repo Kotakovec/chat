@@ -11,15 +11,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kotak Engine">
     
-    <!-- Ikony pro PWA -->
+    <!-- Ikony pro PWA - přidány všechny potřebné velikosti -->
     <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="images/logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/logo.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="images/logo.png">
     
-    <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <!-- Manifest s absolutní cestou -->
+    <link rel="manifest" href="https://kotakovec.github.io/chat/manifest.json">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
         
         * {
             box-sizing: border-box;
@@ -30,7 +33,7 @@
         body, html {
             height: 100%;
             font-family: 'Roboto', sans-serif;
-            background: #f7f7f7;
+            background: linear-gradient(135deg, #f7f9fc 0%, #e8ecf2 100%);
             color: #333;
             line-height: 1.6;
         }
@@ -47,101 +50,131 @@
         
         .logo-container {
             margin-bottom: 30px;
+            animation: fadeIn 1s ease;
         }
         
         .logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 20px;
+            width: 150px;
+            height: 150px;
+            border-radius: 25px;
             background: linear-gradient(135deg, #0088cc, #0055aa);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            margin: 0 auto 15px;
+            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
+            margin: 0 auto 20px;
+            overflow: hidden;
         }
         
         .logo-img {
             width: 100%;
             height: 100%;
-            border-radius: 20px;
             object-fit: cover;
         }
         
         h1 {
-            font-size: 28px;
+            font-size: 32px;
             margin-bottom: 10px;
             color: #0088cc;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
         }
         
         .instructions {
             background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 500px;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            max-width: 550px;
             width: 100%;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
+            animation: slideUp 0.8s ease;
         }
         
         .instructions h2 {
-            font-size: 20px;
-            margin-bottom: 15px;
+            font-size: 24px;
+            margin-bottom: 20px;
             color: #0088cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .instructions h2 i {
+            margin-right: 10px;
         }
         
         .instruction-step {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-align: left;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f9f9f9;
+            transition: transform 0.3s;
+        }
+        
+        .instruction-step:hover {
+            transform: translateX(5px);
+            background: #f0f7ff;
         }
         
         .step-number {
             background: #0088cc;
             color: white;
-            width: 25px;
-            height: 25px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin-right: 10px;
+            margin-right: 15px;
             flex-shrink: 0;
+            font-size: 16px;
         }
         
         .step-text {
             flex: 1;
+            font-size: 16px;
         }
         
         .device-selector {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            gap: 10px;
         }
         
         .device-btn {
             background: #e0e0e0;
             border: none;
-            padding: 10px 20px;
-            margin: 0 5px;
-            border-radius: 20px;
+            padding: 12px 25px;
+            border-radius: 25px;
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s;
+            font-size: 15px;
         }
         
         .device-btn.active {
             background: #0088cc;
             color: white;
+            box-shadow: 0 4px 10px rgba(0, 136, 204, 0.3);
         }
         
         .device-instructions {
             display: none;
+            animation: fadeIn 0.5s ease;
         }
         
         .device-instructions.active {
@@ -149,15 +182,48 @@
         }
         
         .note {
-            margin-top: 20px;
+            margin-top: 25px;
             font-style: italic;
             color: #666;
+            font-size: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border-left: 4px solid #0088cc;
+        }
+        
+        .check-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            background: #0088cc;
+            color: white;
+            border-radius: 50%;
+            line-height: 20px;
+            text-align: center;
             font-size: 14px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         @media (max-width: 600px) {
             h1 {
-                font-size: 24px;
+                font-size: 26px;
             }
             
             .instructions {
@@ -169,7 +235,12 @@
             }
             
             .step-number {
-                margin-bottom: 5px;
+                margin-bottom: 10px;
+            }
+            
+            .device-btn {
+                padding: 10px 15px;
+                font-size: 14px;
             }
         }
     </style>
@@ -182,10 +253,11 @@
                 <span style="display:none;">KE</span>
             </div>
             <h1>KotakEngine Chat</h1>
+            <p class="subtitle">Komunikace snadno a rychle</p>
         </div>
         
         <div class="instructions">
-            <h2>Přidejte si aplikaci na plochu</h2>
+            <h2><span class="check-icon">✓</span> Přidejte si aplikaci na plochu</h2>
             
             <div class="device-selector">
                 <button class="device-btn active" data-device="ios">iOS</button>
@@ -222,7 +294,7 @@
                 </div>
                 <div class="instruction-step">
                     <div class="step-number">3</div>
-                    <div class="step-text">Vyberte "Přidat na plochu"</div>
+                    <div class="step-text">Vyberte "Přidat na plochu" nebo "Nainstalovat"</div>
                 </div>
                 <div class="instruction-step">
                     <div class="step-number">4</div>
@@ -230,7 +302,7 @@
                 </div>
             </div>
             
-            <p class="note">Aplikace je dostupná pouze jako webová aplikace přidaná na plochu.</p>
+            <p class="note">Aplikace je dostupná pouze jako webová aplikace přidaná na plochu. Po přidání ikony na plochu ji najdete mezi ostatními aplikacemi.</p>
         </div>
     </div>
 
