@@ -89,17 +89,14 @@ Notification.requestPermission().then(permission => {
   if(permission === 'granted') console.log('Notifikace povoleny');
 });
 
-// Kontrola PWA a iOS
+// Kontrola PWA
 function isInStandaloneMode() {
   return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
-}
-function isIOS() {
-  return /iPhone|iPad|iPod/.test(navigator.userAgent);
 }
 
 const content = document.getElementById('content');
 
-if (isInStandaloneMode() && isIOS()) {
+if (isInStandaloneMode()) {
   content.innerHTML = `
     <iframe src="https://kotakovec.github.io/chat/chat/"></iframe>
     <button id="btnLauncher">Launcher</button>
@@ -139,7 +136,7 @@ if (isInStandaloneMode() && isIOS()) {
 } else {
   content.innerHTML = `
     <div id="message">
-      Tento chat je dostupný pouze na iOS a jen pokud je spuštěn jako webová aplikace z plochy.
+      Tento chat je dostupný pouze pokud je spuštěn jako webová aplikace z plochy.
     </div>
   `;
 }
