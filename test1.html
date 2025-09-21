@@ -32,7 +32,7 @@ html, body {height:100%; overflow:hidden; background:#000; font-family:'Roboto',
   transition: opacity 1.5s ease;
 }
 
-/* PC verze – větší a rozostřená */
+/* PC verze */
 @media (min-width:601px){
   .light {
     filter:blur(120px);
@@ -43,16 +43,17 @@ html, body {height:100%; overflow:hidden; background:#000; font-family:'Roboto',
   .light.green  {background:rgba(100,255,180,0.5); width:350px; height:350px; top:60%; left:40%;}
 }
 
-/* Mobilní verze – menší a vycentrovaná */
+/* Mobilní verze – viditelná a kolem loga */
 @media (max-width:600px){
   .intro {justify-content:center; align-items:center;}
   .light {
-    filter:blur(50px);
+    filter:blur(60px);
     animation: lightMove 6s ease-in-out infinite alternate;
+    opacity:0.8;
   }
-  .light.purple {width:120px; height:120px; top:50%; left:50%; transform:translate(-50%,-50%);}
-  .light.blue   {width:150px; height:150px; top:50%; left:50%; transform:translate(-50%,-50%);}
-  .light.green  {width:100px; height:100px; top:50%; left:50%; transform:translate(-50%,-50%);}
+  .light.purple {width:140px; height:140px; top:35%; left:35%;}
+  .light.blue   {width:160px; height:160px; top:45%; left:55%;}
+  .light.green  {width:120px; height:120px; top:55%; left:50%;}
   .logo, .ke {width:100px; height:auto;}
 }
 
@@ -144,7 +145,6 @@ button:hover {background:#006699; transform:translateY(-2px); box-shadow:0 4px 1
 </head>
 <body>
 
-<!-- --- Intro --- -->
 <div class="intro" id="intro">
   <div class="light purple"></div>
   <div class="light blue"></div>
@@ -154,7 +154,6 @@ button:hover {background:#006699; transform:translateY(-2px); box-shadow:0 4px 1
   <img src="images/ke.png" alt="Kotak Engine" class="ke" id="ke">
 </div>
 
-<!-- --- Web --- -->
 <div class="main" id="main">
   <div class="container">
     <img src="images/logo.png" alt="Kotak Logo" class="main-logo">
@@ -183,13 +182,9 @@ const logo = document.getElementById('logo');
 const ke = document.getElementById('ke');
 const lights = document.querySelectorAll('.light');
 
-// Plynulé zapnutí světel
 setTimeout(()=>{lights.forEach(l=>l.style.opacity=1);},500);
-
-// Plynulé zhasnutí světel
 setTimeout(()=>{lights.forEach(l=>l.style.opacity=0);}, window.innerWidth > 600 ? 8000 : 6000);
 
-// Intro loga a fadeout
 setTimeout(()=>{logo.classList.add('show');},10000);
 setTimeout(()=>{logo.classList.add('hide');},12000);
 
