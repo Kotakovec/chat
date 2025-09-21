@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Kotak Engine Intro + Web</title>
+
+<!-- Google font -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+* {margin:0;padding:0;box-sizing:border-box;}
+html, body {height:100%; overflow:hidden; background:#000; font-family:'Roboto', sans-serif;}
+
+/* --- Intro --- */
+.intro {
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  z-index:9999;
+}
+
+.light {
+  position:absolute;
+  border-radius:50%;
+  filter:blur(120px);
+  opacity:0;
+  animation: lightMove 8s ease-in-out infinite alternate;
+  transition: opacity 2s ease;
+}
+.purple {background:rgba(180,100,255,0.6); width:400px; height:400px; top:20%; left:30%;}
+.blue   {background:rgba(80,150,255,0.6); width:500px; height:500px; top:40%; left:50%;}
+.green  {background:rgba(100,255,180,0.5); width:350px; height:350px; top:60%; left:40%;}
+
+@keyframes lightMove {
+  0% {transform:translate(0,0) scale(1);}
+  50% {transform:translate(-50px,30px) scale(1.2);}
+  100% {transform:translate(60px,-40px) scale(0.9);}
+}
+
+.logo, .ke {
+  position:absolute;
+  width:200px;
+  height:auto;
+  opacity:0;
+  transition:opacity 1s ease, transform 1s ease;
+  filter:drop-shadow(0 0 20px rgba(255,255,255,0.6));
+  border-radius:20px;
+}
+.logo.show, .ke.show {opacity:1;}
+.logo.hide {opacity:0;}
+
+.intro.fadeout {animation: fadeout 1s ease forwards;}
+@keyframes fadeout {to {opacity:0; visibility:hidden;}}
+
+/* --- Web --- */
+.main {
+  opacity:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  transition:opacity 1s ease;
+  flex-direction:column;
+  text-align:center;
+  color:#fff;
+  background:#5a0070;
+  padding-top:env(safe-area-inset-top);
+  padding-right:env(safe-area-inset-right);
+  padding-bottom:env(safe-area-inset-bottom);
+  padding-left:env(safe-area-inset-left);
+  font-family:'Roboto', sans-serif;
+}
+.main.visible {opacity:1;}
+
+.container {max-width:500px; width:100%; padding:20px; display:flex; flex-direction:column; align-items:center;}
+
+/* Hlavní logo nad vším obsahem */
+.main-logo {
+  width: 150px;
+  height: 150px; /* aby bylo perfektně kulaté */
+  margin-bottom: 30px;
+  border-radius: 50%; /* kulaté */
+  outline: none;
+  box-shadow: 0 0 30px rgba(206, 99, 255, 0.8), 0 0 60px rgba(206, 99, 255, 0.6);
+  transition: box-shadow 0.3s ease;
+  object-fit: cover;
+}
+.main-logo:hover {
+  box-shadow: 0 0 50px rgba(206, 99, 255, 1), 0 0 80px rgba(206, 99, 255, 0.8);
+}
+
+
+.container .logo {
+  width:120px;
+  height:120px;
+  border-radius:50px;
+  object-fit:cover;
+  margin-bottom:20px;
+  border:3px solid rgba(255,255,255,0.3);
+}
+h1 {font-size:2rem; margin-bottom:20px;}
+
+.button-container {display:flex; flex-direction:column; gap:15px; margin-bottom:25px; width:100%; max-width:250px; align-items:center;}
+.button-container a {text-decoration:none; width:100%;}
+button {width:100%; padding:14px 20px; font-size:16px; font-weight:bold; border:none; border-radius:25px; background:#000; color:#fff; cursor:pointer; transition:all 0.3s ease;}
+button:hover {background:#006699; transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+.description {font-size:16px; line-height:1.6; color:#f0f0f0; max-width:400px;}
+.description h1 {font-size:25px; line-height:0.5; margin-top:20px; color:#f0f0f0; max-width:500px;}
+.description strong {display:block; margin-bottom:8px; font-size:17px; color:#fff;}
+
+@media (max-width:600px){
+  .main-logo {width: 150px; margin-bottom: 20px;}
+  .container .logo {width:90px; height:90px;}
+  h1 {font-size:1.6rem;}
+  button {font-size:14px; padding:12px;}
+  .description {font-size:14px; max-width:90%;}
+}
+</style>
+</head>
+<body>
+
+<!-- --- Intro --- -->
+<div class="intro" id="intro">
+  <div class="light purple"></div>
+  <div class="light blue"></div>
+  <div class="light green"></div>
+
+  <img src="images/kotak.png" alt="Kotak logo" class="logo" id="logo">
+  <img src="images/ke.png" alt="Kotak Engine" class="ke" id="ke">
+</div>
+
+<!-- --- Web --- -->
+<div class="main" id="main">
+  <div class="container">
+    <!-- Hlavní logo nad vším obsahem -->
+    <img src="images/logo.png" alt="Kotak Logo" class="main-logo">
+    
+    <!-- Zobrazení ke.png s kulatým rámečkem -->
+    <img src="images/logo.png" alt="KotakEngine Logo" class="logo">
+    <h1>Kotak Engine</h1>
+    
+    <div class="button-container">
+      <a href="https://kotakovec.github.io/chat/chat.html" target="_blank">
+        <button>Chat</button>
+      </a>
+    </div>
+    <div class="description">
+      <h1>CHAT</h1>
+      <strong>Soukromí na prvním místě. Mluv beze strachu.</strong>
+      Tento chat je navržen tak, aby byla vaše komunikace vždy chráněná a dostupná jen těm, komu opravdu věříte.  
+      Žádné sledování, žádné reklamy, jen rychlá a bezpečná komunikace.
+    </div>
+  </div>
+</div>
+
+<script>
+const intro = document.getElementById('intro');
+const main = document.getElementById('main');
+const logo = document.getElementById('logo');
+const ke = document.getElementById('ke');
+const lights = document.querySelectorAll('.light');
+
+// světla zapnout
+setTimeout(()=>{lights.forEach(l=>l.style.opacity=1);},500);
+
+// světla postupně zhasínají
+setTimeout(()=>{lights.forEach(l=>l.style.opacity=0);},8000);
+
+// tvoje logo
+setTimeout(()=>{logo.classList.add('show');},10000);
+setTimeout(()=>{logo.classList.add('hide');},12000);
+
+// ke.png logo objeví se a přiblíží
+setTimeout(()=>{
+  ke.classList.add('show');
+  setTimeout(()=>{
+    ke.classList.add('zoom');
+    setTimeout(()=>{
+      intro.classList.add('fadeout');
+      main.classList.add('visible'); // zobrazí se tvůj web s novým logem
+    },1000);
+  },100);
+},13000);
+</script>
+
+</body>
+</html>
