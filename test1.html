@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Kotak Engine Intro + Web</title>
 
-<!-- Google font -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
@@ -44,21 +43,24 @@ html, body {height:100%; overflow:hidden; background:#000; font-family:'Roboto',
   .light.green  {background:rgba(100,255,180,0.5); width:350px; height:350px; top:60%; left:40%;}
 }
 
-/* Mobilní verze – menší a jemnější */
+/* Mobilní verze – menší a vycentrovaná */
 @media (max-width:600px){
+  .intro {justify-content:center; align-items:center;}
   .light {
     filter:blur(50px);
     animation: lightMove 6s ease-in-out infinite alternate;
   }
-  .light.purple {width:150px; height:150px; top:15%; left:20%;}
-  .light.blue   {width:180px; height:180px; top:35%; left:45%;}
-  .light.green  {width:130px; height:130px; top:55%; left:35%;}
+  .light.purple {width:120px; height:120px; top:50%; left:50%; transform:translate(-50%,-50%);}
+  .light.blue   {width:150px; height:150px; top:50%; left:50%; transform:translate(-50%,-50%);}
+  .light.green  {width:100px; height:100px; top:50%; left:50%; transform:translate(-50%,-50%);}
+  .logo, .ke {width:100px; height:auto;}
 }
 
+/* --- Animace světel --- */
 @keyframes lightMove {
   0% {transform:translate(0,0) scale(1);}
-  50% {transform:translate(-50px,30px) scale(1.2);}
-  100% {transform:translate(60px,-40px) scale(0.9);}
+  50% {transform:translate(-20px,15px) scale(1.1);}
+  100% {transform:translate(20px,-15px) scale(0.9);}
 }
 
 .logo, .ke {
@@ -101,7 +103,7 @@ html, body {height:100%; overflow:hidden; background:#000; font-family:'Roboto',
 /* Hlavní logo nad vším obsahem */
 .main-logo {
   width: 150px;
-  height: 150px; /* kulaté */
+  height: 150px;
   margin-bottom: 30px;
   border-radius: 50%;
   outline: none;
@@ -132,7 +134,7 @@ button:hover {background:#006699; transform:translateY(-2px); box-shadow:0 4px 1
 .description strong {display:block; margin-bottom:8px; font-size:17px; color:#fff;}
 
 @media (max-width:600px){
-  .main-logo {width: 150px; height:150px; margin-bottom: 20px;}
+  .main-logo {width: 120px; height:120px; margin-bottom: 20px;}
   .container .logo {width:90px; height:90px;}
   h1 {font-size:1.6rem;}
   button {font-size:14px; padding:12px;}
@@ -155,10 +157,8 @@ button:hover {background:#006699; transform:translateY(-2px); box-shadow:0 4px 1
 <!-- --- Web --- -->
 <div class="main" id="main">
   <div class="container">
-    <!-- Hlavní logo nad vším obsahem -->
     <img src="images/logo.png" alt="Kotak Logo" class="main-logo">
     
-    <!-- Zobrazení ke.png s kulatým rámečkem -->
     <img src="images/logo.png" alt="KotakEngine Logo" class="logo">
     <h1>Kotak Engine</h1>
     
@@ -183,17 +183,11 @@ const logo = document.getElementById('logo');
 const ke = document.getElementById('ke');
 const lights = document.querySelectorAll('.light');
 
-// Plynulé zapnutí světel po 0.5s
-setTimeout(()=>{
-  lights.forEach(l=>l.style.opacity=1);
-}, 500);
+// Plynulé zapnutí světel
+setTimeout(()=>{lights.forEach(l=>l.style.opacity=1);},500);
 
-// Plynulé zhasnutí světel po 8s (PC) / 6s (mobil)
-setTimeout(()=>{
-  lights.forEach(l=>{
-    l.style.opacity=0;
-  });
-}, window.innerWidth > 600 ? 8000 : 6000);
+// Plynulé zhasnutí světel
+setTimeout(()=>{lights.forEach(l=>l.style.opacity=0);}, window.innerWidth > 600 ? 8000 : 6000);
 
 // Intro loga a fadeout
 setTimeout(()=>{logo.classList.add('show');},10000);
