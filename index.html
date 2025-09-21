@@ -82,12 +82,19 @@ html, body {height:100%; overflow:hidden; background:#000; font-family:'Roboto',
 
 /* Hlavní logo nad vším obsahem */
 .main-logo {
-  width: 200px;
-  height: auto;
+  width: 150px;
+  height: 150px; /* aby bylo perfektně kulaté */
   margin-bottom: 30px;
-  border-radius: 50px;
-  outline: #ce63ff;
+  border-radius: 50%; /* kulaté */
+  outline: none;
+  box-shadow: 0 0 30px rgba(206, 99, 255, 0.8), 0 0 60px rgba(206, 99, 255, 0.6);
+  transition: box-shadow 0.3s ease;
+  object-fit: cover;
 }
+.main-logo:hover {
+  box-shadow: 0 0 50px rgba(206, 99, 255, 1), 0 0 80px rgba(206, 99, 255, 0.8);
+}
+
 
 .container .logo {
   width:120px;
