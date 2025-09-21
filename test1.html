@@ -32,7 +32,7 @@ html, body {height:100%; overflow:hidden; background:#000; font-family:'Roboto',
   transition: opacity 1.5s ease;
 }
 
-/* PC verze */
+/* PC verze – animovaná světla */
 @media (min-width:601px){
   .light {
     filter:blur(120px);
@@ -43,21 +43,13 @@ html, body {height:100%; overflow:hidden; background:#000; font-family:'Roboto',
   .light.green  {background:rgba(100,255,180,0.5); width:350px; height:350px; top:60%; left:40%;}
 }
 
-/* Mobilní verze – viditelná a kolem loga */
+/* Mobilní verze – žádná animace, jen loga */
 @media (max-width:600px){
-  .intro {justify-content:center; align-items:center;}
-  .light {
-    filter:blur(60px);
-    animation: lightMove 6s ease-in-out infinite alternate;
-    opacity:0.8;
-  }
-  .light.purple {width:140px; height:140px; top:35%; left:35%;}
-  .light.blue   {width:160px; height:160px; top:45%; left:55%;}
-  .light.green  {width:120px; height:120px; top:55%; left:50%;}
+  .light {display:none;}
   .logo, .ke {width:100px; height:auto;}
 }
 
-/* --- Animace světel --- */
+/* --- Animace světel pro PC --- */
 @keyframes lightMove {
   0% {transform:translate(0,0) scale(1);}
   50% {transform:translate(-20px,15px) scale(1.1);}
@@ -182,22 +174,23 @@ const logo = document.getElementById('logo');
 const ke = document.getElementById('ke');
 const lights = document.querySelectorAll('.light');
 
-setTimeout(()=>{lights.forEach(l=>l.style.opacity=1);},500);
-setTimeout(()=>{lights.forEach(l=>l.style.opacity=0);}, window.innerWidth > 600 ? 8000 : 6000);
+// PC: zapnutí a zhasnutí světel
+if(window.innerWidth > 600){
+  setTimeout(()=>{lights.forEach(l=>l.style.opacity=1);},500);
+  setTimeout(()=>{lights.forEach(l=>l.style.opacity=0);},8000);
+}
 
-setTimeout(()=>{logo.classList.add('show');},10000);
-setTimeout(()=>{logo.classList.add('hide');},12000);
+// loga
+setTimeout(()=>{logo.classList.add('show');},1000);
+setTimeout(()=>{logo.classList.add('hide');},3000);
 
 setTimeout(()=>{
   ke.classList.add('show');
   setTimeout(()=>{
-    ke.classList.add('zoom');
-    setTimeout(()=>{
-      intro.classList.add('fadeout');
-      main.classList.add('visible');
-    },1000);
-  },100);
-},13000);
+    intro.classList.add('fadeout');
+    main.classList.add('visible');
+  },500);
+},3500);
 </script>
 
 </body>
